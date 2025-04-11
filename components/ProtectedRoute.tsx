@@ -5,14 +5,18 @@ import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-	const { token } = useAuth();
+	const { token, loading } = useAuth();
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!token) {
+		if (!loading && !token) {
 			router.push("/login");
 		}
-	}, [token]);
+	}, [token, loading]);
+
+	if (loading) {
+		return <div className='p-8'>Loading...</div>;
+	}
 
 	return <>{token && children}</>;
 }
