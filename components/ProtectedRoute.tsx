@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import Navbar from "./Navbar";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	const { token, loading } = useAuth();
@@ -18,5 +19,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 		return <div className='p-8'>Loading...</div>;
 	}
 
-	return <>{token && children}</>;
+	return (
+		<>
+			{" "}
+			<Navbar />
+			<main>{children}</main>
+		</>
+	);
 }
