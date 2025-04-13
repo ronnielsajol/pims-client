@@ -10,7 +10,7 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 
 	useEffect(() => {
 		if (!loading && !token) {
-			router.push("/login");
+			router.push("/");
 		}
 	}, [token, loading]);
 
