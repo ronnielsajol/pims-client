@@ -1,3 +1,4 @@
+"use client";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,10 +33,21 @@ const Navbar = () => {
 						className={cn(isActive("/properties") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "", "p-2")}>
 						Properties
 					</Link>
+
+					{user?.role === "master_admin" && (
+						<Link
+							href='/admins'
+							className={cn(isActive("/admins") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "", "p-2")}>
+							Admins
+						</Link>
+					)}
 				</div>
 				<div className='font-medium text-[#800000] flex items-center gap-4'>
 					<h1 className=''>{user?.name}</h1>
-					<Button variant='outline' onClick={logout}>
+					<Button
+						variant='outline'
+						onClick={logout}
+						className='cursor-pointer border-2 border-[#800000] text-[#800000] hover:bg-[#800000] hover:text-white'>
 						Logout
 					</Button>
 				</div>
