@@ -4,10 +4,13 @@ import { apiFetch } from "@/lib/api";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { Property } from "@/types";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function PropertiesPage() {
 	const { token, user } = useAuth();
 	const [properties, setProperties] = useState<Property[]>([]);
+	const router = useRouter();
 
 	useEffect(() => {
 		console.log(token);
@@ -25,8 +28,17 @@ export default function PropertiesPage() {
 
 	return (
 		<ProtectedRoute>
-			<div className='p-8'>
-				<h2 className='text-2xl font-bold mb-4'>All Properties</h2>
+			<div className='p-8 w-full'>
+				<div className='flex justify-between w-full'>
+					<h2 className='text-2xl font-bold mb-4'>All Properties</h2>
+					<Button
+						className='bg-green-600 cursor-pointer hover:bg-green-500'
+						onClick={() => {
+							router.push("/properties/add");
+						}}>
+						Add Property
+					</Button>
+				</div>
 				<ul className='space-y-2'>
 					{properties.map((p) => (
 						<li key={p.id} className='p-4 border rounded'>

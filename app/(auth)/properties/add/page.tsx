@@ -46,7 +46,7 @@ export default function AddPropertyPage() {
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
 					/>
-					<button className='bg-green-600 text-white px-4 py-2 rounded w-full'>Add Property</button>
+					<button className='bg-green-600  text-white px-4 py-2 rounded w-full'>Add Property</button>
 				</form>
 			</div>
 		</ProtectedRoute>

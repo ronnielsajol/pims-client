@@ -8,7 +8,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
 		<AuthProvider>
 			<ProtectedRoute>
 				<Navbar />
-				{children}
+				<main className='mx-auto max-w-9/12 w-full flex justify-between '>{children}</main>
 			</ProtectedRoute>
 		</AuthProvider>
 	);

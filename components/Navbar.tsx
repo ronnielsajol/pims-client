@@ -25,19 +25,38 @@ const Navbar = () => {
 					</Link>
 					<Link
 						href='/dashboard'
-						className={cn(isActive("/dashboard") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "", "p-2")}>
+						className={cn(
+							isActive("/dashboard") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
+							"p-2 hover:bg-gray-400/30"
+						)}>
 						Home
 					</Link>
 					<Link
 						href='/properties'
-						className={cn(isActive("/properties") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "", "p-2")}>
+						className={cn(
+							isActive("/properties") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
+							"p-2 hover:bg-gray-400/30"
+						)}>
 						Properties
 					</Link>
 
+					{(user?.role === "master_admin" || user?.role === "admin") && (
+						<Link
+							href='/users'
+							className={cn(
+								isActive("/users") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
+								"p-2 hover:bg-gray-400/30"
+							)}>
+							Users
+						</Link>
+					)}
 					{user?.role === "master_admin" && (
 						<Link
 							href='/admins'
-							className={cn(isActive("/admins") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "", "p-2")}>
+							className={cn(
+								isActive("/admins") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
+								"p-2 hover:bg-gray-400/30"
+							)}>
 							Admins
 						</Link>
 					)}

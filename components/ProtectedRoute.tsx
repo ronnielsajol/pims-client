@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { motion } from "motion/react";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
 	const { token, loading } = useAuth();
@@ -14,13 +15,17 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
 		}
 	}, [token, loading]);
 
-	if (loading) {
-		return <div className='p-8'>Loading...</div>;
+	if (loading || !token) {
+		return (
+			<div className='p-8 w-screen h-screen flex items-center justify-center'>
+				<motion.div
+					animate={{ rotate: 360 }}
+					transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+					className='w-16 h-16 rounded-[50%] border-8 border-gray-300 border-t-[#800000] will-change-transform'
+				/>
+			</div>
+		);
 	}
 
-	return (
-		<>
-			<main>{children}</main>
-		</>
-	);
+	return <>{children}</>;
 }

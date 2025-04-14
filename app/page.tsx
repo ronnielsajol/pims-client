@@ -55,7 +55,7 @@ export default function Home() {
 	};
 	return (
 		<div className='grid grid-cols-3  gap-y-0 gap-x-0 min-h-screen '>
-			<div className='col-span-2 bg-amber-300 bg-[url("/images/pup-bg.jpg")] bg-cover'>1</div>
+			<div className='col-span-2 bg-[#c3c3c3] bg-[url("/images/pup-bg.jpg")] bg-cover'></div>
 			<div className='bg-[#c3c3c3] flex justify-start items-center flex-col pt-20 px-4 '>
 				<Image src='/images/pup-logo.png' alt='PUP Logo' height={88} width={88} />
 				<h2 className='text-[2rem] font-source-bold'>PUP-PSMO PIMS Module</h2>

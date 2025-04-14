@@ -16,7 +16,7 @@ const UsersPage = () => {
 	useEffect(() => {
 		if (!token) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users/admin", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token ?? "")
 			.then((res) => {
 				setUsers(res.data);
 			})
@@ -27,13 +27,13 @@ const UsersPage = () => {
 		<ProtectedRoute>
 			<div className='p-8 w-full'>
 				<div className='flex justify-between w-full'>
-					<h2 className='text-2xl font-bold mb-4'>All Admin</h2>
+					<h2 className='text-2xl font-bold mb-4'>All User</h2>
 					<Button
 						className='bg-green-600 cursor-pointer hover:bg-green-500'
 						onClick={() => {
-							router.push("/admins/add");
+							router.push("/users/add");
 						}}>
-						Create New Admin
+						Create New User
 					</Button>
 				</div>
 				<ul className='space-y-2'>
