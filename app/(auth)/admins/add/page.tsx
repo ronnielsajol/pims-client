@@ -19,8 +19,8 @@ export default function AddPropertyPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "admin" }, token ?? "");
-			alert("Property added!");
+			await apiFetch("/auth/admin/sign-up", "POST", { name, email, password, role: "admin" }, token ?? "");
+			alert("Account created!");
 			setName("");
 			setEmail("");
 			setPassword("");

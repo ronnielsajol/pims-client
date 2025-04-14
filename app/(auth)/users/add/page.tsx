@@ -20,7 +20,7 @@ export default function AddPropertyPage() {
 		e.preventDefault();
 		try {
 			await apiFetch("/auth/sign-up", "POST", { name, email, password }, token ?? "");
-			alert("Property added!");
+			alert("Account created!");
 			setName("");
 			setEmail("");
 			setPassword("");
