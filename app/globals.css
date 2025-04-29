@@ -25,6 +25,13 @@
 	font-display: swap;
 }
 
+@theme {
+	--breakpoint-*: initial;
+	--breakpoint-xl: 50rem;
+	--breakpoint-laptop: 60rem;
+	--breakpint-desktop: 80rem;
+}
+
 @theme inline {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -148,10 +155,10 @@ body {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+	* {
+		@apply border-border outline-ring/50;
 	}
-  body {
-    @apply bg-background text-foreground;
+	body {
+		@apply bg-background text-foreground;
 	}
 }
