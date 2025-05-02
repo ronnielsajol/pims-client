@@ -10,6 +10,17 @@ import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
 import { Check, X } from "lucide-react";
+import { toast } from "sonner";
+import {
+	Dialog,
+	DialogClose,
+	DialogTrigger,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
+	DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function PropertiesPage() {
 	const { token, user } = useAuth();
@@ -19,37 +30,81 @@ export default function PropertiesPage() {
 	const [assignMode, setAssignMode] = useState<{ [propertyId: number]: boolean }>({});
 	const router = useRouter();
 
-	useEffect(() => {
+	const fetchProperties = async () => {
 		if (!token || !user) return;
 
-		if (user.role === "staff") {
-			apiFetch<{ success: boolean; message: string; data: Property[] }>(`/properties/${user.id}`, "GET", undefined, token)
-				.then((res) => setProperties(res.data))
-				.catch((err) => console.error(err.message));
-		} else {
-			apiFetch<{ success: boolean; data: Property[] }>("/properties/all?includeAssignments=true", "GET", undefined, token)
-				.then((res) => setProperties(res.data))
-				.catch((err) => console.error(err.message));
+		try {
+			if (user.role === "staff") {
+				const res = await apiFetch<{ success: boolean; message: string; data: Property[] }>(
+					`/properties/staff/${user.id}`,
+					"GET",
+					undefined,
+					token
+				);
+				setProperties(res.data);
+			} else {
+				const propsRes = await apiFetch<{ success: boolean; data: Property[] }>(
+					"/properties/all?includeAssignments=true",
+					"GET",
+					undefined,
+					token
+				);
+				setProperties(propsRes.data);
 
-			apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token)
-				.then((res) => setUsers(res.data))
-				.catch((err) => console.error(err.message));
+				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token);
+				setUsers(usersRes.data);
+			}
+		} catch (error) {
+			console.error("Failed to fetch properties or users:", error);
 		}
+	};
+
+	useEffect(() => {
+		fetchProperties();
 	}, [token, user]);
 
 	const handleAssign = async (propertyId: number) => {
 		const userId = selectedUser[propertyId];
 		if (!userId) return alert("Please select a user");
 
+		const toastId = toast.loading("Assigning property...");
 		try {
 			await apiFetch("/properties/assign", "POST", { userId, propertyId }, token ?? "");
-			alert("Property assigned!");
+			await fetchProperties();
+
+			toast.success("Property assigned!", { id: toastId });
+			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
 		} catch (err) {
 			console.error("Assign error:", err);
-			alert("Failed to assign property");
+			toast.error("Failed to assign property");
 		}
 	};
 
+	const handleDelete = async (propertyId: number, confirmed: boolean) => {
+		const toastId = toast.loading("Deleting property...");
+
+		try {
+			const res = await apiFetch<{ requiresConfirmation?: boolean; message?: string }>(
+				`/properties/${propertyId}`,
+				"DELETE",
+				{ confirmed },
+				token ?? ""
+			);
+
+			if (res.requiresConfirmation && !confirmed) {
+				toast.warning(res.message || "This property is assigned. Confirmation is required to delete.");
+				return;
+			}
+
+			toast.success("Property deleted successfully", {
+				id: toastId,
+			});
+			await fetchProperties();
+		} catch (err) {
+			console.error("Delete error:", err);
+			toast.error("Failed to delete property");
+		}
+	};
 	return (
 		<ProtectedRoute>
 			<div className='p-8 w-full'>
@@ -57,7 +112,7 @@ export default function PropertiesPage() {
 					<h2 className='text-2xl font-bold mb-4'>All Properties</h2>
 					{(user?.role === "admin" || user?.role === "master_admin") && (
 						<Button
-							className='bg-green-600 cursor-pointer hover:bg-green-500'
+							className='bg-green-600 cursor-pointer hover:bg-green-700'
 							onClick={() => {
 								router.push("/properties/add");
 							}}>
@@ -71,8 +126,13 @@ export default function PropertiesPage() {
 							<TableHead className='w-[50px]'>ID</TableHead>
 							<TableHead className='w-3/12'>Name</TableHead>
 							<TableHead className='w-3/12'>Description</TableHead>
-							<TableHead>QR Code</TableHead>
-							<TableHead>Assign To</TableHead>
+							<TableHead className='w-[100px]'>QR Code</TableHead>
+							{(user?.role === "admin" || user?.role === "master_admin") && (
+								<>
+									<TableHead className='w-[300px]'>Assigned To</TableHead>
+									<TableHead>Actions</TableHead>
+								</>
+							)}
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -81,13 +141,13 @@ export default function PropertiesPage() {
 								<TableCell className='font-medium '>{p.id}</TableCell>
 								<TableCell className='font-medium'>{p.name}</TableCell>
 								<TableCell className=''>{p.description}</TableCell>
-								<TableCell className=''>
+								<TableCell className='p-0 py-2'>
 									{" "}
-									{p.qrCode && <Image src={p.qrCode} alt='QR' className='w-24 h-24 mt-2' width={100} height={100} />}
+									{p.qrCode && <Image src={p.qrCode} alt='QR' className='w-20 h-20' width={100} height={100} />}
 								</TableCell>
 								<TableCell>
 									{(user?.role === "admin" || user?.role === "master_admin") && (
-										<div>
+										<div className='max-w-[300px]'>
 											{p.assignedTo ? (
 												<p className='text-sm text-muted-foreground'>{p.assignedTo}</p>
 											) : assignMode[p.id] ? (
@@ -107,7 +167,6 @@ export default function PropertiesPage() {
 														className='bg-green-600 group hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer '
 														onClick={() => {
 															handleAssign(p.id);
-															setAssignMode((prev) => ({ ...prev, [p.id]: false }));
 														}}>
 														<Check className='' strokeWidth={3} />
 													</Button>
@@ -134,6 +193,45 @@ export default function PropertiesPage() {
 										</div>
 									)}
 								</TableCell>
+								{(user?.role === "admin" || user?.role === "master_admin") && (
+									<TableCell className=''>
+										<div className='h-full flex gap-2 items-center'>
+											<Button
+												variant={"outline"}
+												className='border-blue-500 text-blue-500 hover:text-white hover:bg-blue-500 cursor-pointer'
+												onClick={() => router.push(`/properties/edit/${p.id}`)}>
+												Edit{" "}
+											</Button>
+											<Dialog>
+												<DialogTrigger asChild>
+													<Button variant='outline' className='border-red-500 text-red-500 hover:text-white hover:bg-red-500 cursor-pointer'>
+														Delete
+													</Button>
+												</DialogTrigger>
+												<DialogContent className='xl:max-w-md'>
+													<DialogHeader>
+														<DialogTitle>Are you sure?</DialogTitle>
+														<DialogDescription>
+															{p?.assignedTo
+																? "This property is currently assigned. Do you still want to delete it?"
+																: "Do you want to delete this property?"}
+														</DialogDescription>
+													</DialogHeader>
+													<DialogFooter>
+														<DialogClose asChild>
+															<Button variant='outline' className='cursor-pointer'>
+																Cancel
+															</Button>
+														</DialogClose>
+														<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
+															Confirm
+														</Button>
+													</DialogFooter>
+												</DialogContent>
+											</Dialog>
+										</div>
+									</TableCell>
+								)}
 							</TableRow>
 						))}
 					</TableBody>

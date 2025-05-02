@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-export default function AddPropertyPage() {
+export default function AddAdminPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -70,7 +70,7 @@ export default function AddPropertyPage() {
 						onChange={(e) => setPassword(e.target.value)}
 						required
 					/>
-					<Button className='bg-green-600 hover:bg-green-500  text-white px-4 py-2 text-lg rounded w-full cursor-pointer max-w-min'>
+					<Button className='bg-green-500 hover:bg-green-600  text-white px-4 py-2 text-lg rounded w-full cursor-pointer max-w-min'>
 						Create Admin
 					</Button>
 				</form>

@@ -4,23 +4,35 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ApiError } from "@/types";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
 export default function AddPropertyPage() {
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
 	const { token, user } = useAuth();
+	const [loading, setLoading] = useState(false);
+	const router = useRouter();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setLoading(true);
+
+		const toastId = toast.loading("Adding property...");
 		try {
 			await apiFetch("/properties/add", "POST", { name, description }, token ?? "");
-			alert("Property added!");
+			toast.success("Property added!", { id: toastId });
 			setName("");
 			setDescription("");
+			router.push("/properties");
 		} catch (err: unknown) {
 			const error = err as ApiError;
 			console.error("API Error:", error.message || error.error);
-			alert(error.message || "Something went wrong");
+			toast.error(error.message || "Something went wrong");
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -39,14 +51,18 @@ export default function AddPropertyPage() {
 						className='w-full p-2 border rounded'
 						value={name}
 						onChange={(e) => setName(e.target.value)}
+						required
 					/>
 					<textarea
 						placeholder='Description'
 						className='w-full p-2 border rounded'
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
+						required
 					/>
-					<button className='bg-green-600  text-white px-4 py-2 rounded w-full'>Add Property</button>
+					<Button className='bg-green-600 hover:bg-green-700  text-white px-4 py-2 rounded w-full cursor-pointer'>
+						{loading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Add Property"}
+					</Button>
 				</form>
 			</div>
 		</ProtectedRoute>
