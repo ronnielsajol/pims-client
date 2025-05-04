@@ -5,5 +5,5 @@ export interface Property {
 	qrCode?: string;
 	createdAt?: string;
 	updatedAt?: string;
-	assignedTo?: number;
+	assignedTo?: string;
 }

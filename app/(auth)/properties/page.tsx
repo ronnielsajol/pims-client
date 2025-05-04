@@ -28,6 +28,9 @@ export default function PropertiesPage() {
 	const [users, setUsers] = useState<User[]>([]);
 	const [selectedUser, setSelectedUser] = useState<{ [propertyId: number]: string }>({});
 	const [assignMode, setAssignMode] = useState<{ [propertyId: number]: boolean }>({});
+	const [openDialog, setOpenDialog] = useState<number | null>(null);
+	const [pendingReassign, setPendingReassign] = useState<{ propertyId: number; newUserId: string } | null>(null);
+
 	const router = useRouter();
 
 	const fetchProperties = async () => {
@@ -63,17 +66,33 @@ export default function PropertiesPage() {
 		fetchProperties();
 	}, [token, user]);
 
-	const handleAssign = async (propertyId: number) => {
+	const handleAssign = async (propertyId: number, overrideConfirm = false) => {
 		const userId = selectedUser[propertyId];
-		if (!userId) return alert("Please select a user");
+		if (!userId) return toast.warning("Please select a user");
 
-		const toastId = toast.loading("Assigning property...");
+		const property = properties.find((p) => p.id === propertyId);
+		const isReassigning = !!property?.assignedTo;
+		const currentlyAssignedUser = users.find((u) => u.name === property?.assignedTo);
+
+		if (isReassigning && !overrideConfirm) {
+			if (userId !== String(currentlyAssignedUser?.id)) {
+				// Don't reassign yet — just show dialog
+				setPendingReassign({ propertyId, newUserId: userId });
+				setOpenDialog(propertyId);
+				return;
+			} else {
+				return toast.warning("This property is already assigned to this user.");
+			}
+		}
+
+		const toastId = toast.loading(`${isReassigning ? "Reassigning" : "Assigning"} property...`);
 		try {
 			await apiFetch("/properties/assign", "POST", { userId, propertyId }, token ?? "");
 			await fetchProperties();
 
-			toast.success("Property assigned!", { id: toastId });
+			toast.success(`${isReassigning ? "Property reassigned!" : "Property assigned!"}`, { id: toastId });
 			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
+			setPendingReassign(null);
 		} catch (err) {
 			console.error("Assign error:", err);
 			toast.error("Failed to assign property");
@@ -148,14 +167,15 @@ export default function PropertiesPage() {
 								<TableCell>
 									{(user?.role === "admin" || user?.role === "master_admin") && (
 										<div className='max-w-[300px]'>
-											{p.assignedTo ? (
-												<p className='text-sm text-muted-foreground'>{p.assignedTo}</p>
-											) : assignMode[p.id] ? (
+											{assignMode[p.id] ? (
 												<div className='flex gap-2 items-center'>
 													<select
 														className='p-2 border rounded'
 														value={selectedUser[p.id] || ""}
-														onChange={(e) => setSelectedUser((prev) => ({ ...prev, [p.id]: e.target.value }))}>
+														onChange={(e) => {
+															const newUserId = e.target.value;
+															setSelectedUser((prev) => ({ ...prev, [p.id]: newUserId }));
+														}}>
 														<option value=''>Select Staff</option>
 														{users.map((u) => (
 															<option key={u.id} value={u.id}>
@@ -164,21 +184,73 @@ export default function PropertiesPage() {
 														))}
 													</select>
 													<Button
-														className='bg-green-600 group hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer '
-														onClick={() => {
-															handleAssign(p.id);
-														}}>
-														<Check className='' strokeWidth={3} />
+														className='bg-green-600 group hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer'
+														onClick={() => handleAssign(p.id)}>
+														<Check strokeWidth={3} />
 													</Button>
 													<Button
-														className='bg-red-600 group hover:bg-white hover:text-red-600 text-white hover:border-red-600 border-2 cursor-pointer '
+														className='bg-red-600 group hover:bg-white hover:text-red-600 text-white hover:border-red-600 border-2 cursor-pointer'
 														onClick={() =>
 															setAssignMode((prev) => ({
 																...prev,
 																[p.id]: false,
 															}))
 														}>
-														<X className='' strokeWidth={3} />
+														<X strokeWidth={3} />
+													</Button>
+
+													<Dialog open={openDialog === p.id} onOpenChange={(isOpen) => !isOpen && setOpenDialog(null)}>
+														<DialogContent className='xl:max-w-md'>
+															<DialogHeader>
+																<DialogTitle>Reassign Property</DialogTitle>
+																<DialogDescription>
+																	This property is currently assigned to <strong>{p.assignedTo}</strong>. Do you want to reassign it?
+																</DialogDescription>
+															</DialogHeader>
+															<DialogFooter className='mt-4'>
+																<Button
+																	onClick={() => {
+																		if (pendingReassign) {
+																			// Apply selection
+																			setSelectedUser((prev) => ({
+																				...prev,
+																				[pendingReassign.propertyId]: pendingReassign.newUserId,
+																			}));
+																			// Proceed to assignment with confirmation override
+																			handleAssign(pendingReassign.propertyId, true);
+																			setPendingReassign(null);
+																		}
+																		setOpenDialog(null);
+																	}}
+																	className='bg-green-600 hover:bg-green-700 text-white'>
+																	Confirm
+																</Button>
+																<Button
+																	variant='outline'
+																	onClick={() => {
+																		setPendingReassign(null);
+																		setOpenDialog(null);
+																	}}>
+																	Cancel
+																</Button>
+															</DialogFooter>
+														</DialogContent>
+													</Dialog>
+												</div>
+											) : p.assignedTo ? (
+												<div className='flex gap-2 items-center'>
+													<p className='text-sm text-muted-foreground'>{p.assignedTo}</p>
+													<Button
+														variant='ghost'
+														onClick={() => {
+															setSelectedUser((prev) => ({
+																...prev,
+																[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
+															}));
+															setAssignMode((prev) => ({ ...prev, [p.id]: true }));
+														}}
+														className='transition-none'>
+														Reassign
 													</Button>
 												</div>
 											) : (
@@ -186,13 +258,19 @@ export default function PropertiesPage() {
 													className='cursor-pointer'
 													variant='outline'
 													size='sm'
-													onClick={() => setAssignMode((prev) => ({ ...prev, [p.id]: true }))}>
+													onClick={() =>
+														setAssignMode((prev) => ({
+															...prev,
+															[p.id]: true,
+														}))
+													}>
 													Assign
 												</Button>
 											)}
 										</div>
 									)}
 								</TableCell>
+
 								{(user?.role === "admin" || user?.role === "master_admin") && (
 									<TableCell className=''>
 										<div className='h-full flex gap-2 items-center'>
