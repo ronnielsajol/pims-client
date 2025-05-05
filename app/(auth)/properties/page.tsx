@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import {
 	Dialog,
@@ -135,185 +135,188 @@ export default function PropertiesPage() {
 							onClick={() => {
 								router.push("/properties/add");
 							}}>
+							<PlusCircle className='mr-1 h-4 w-4' />
 							Add Property
 						</Button>
 					)}
 				</div>
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead className='w-[50px]'>ID</TableHead>
-							<TableHead className='w-3/12'>Name</TableHead>
-							<TableHead className='w-3/12'>Description</TableHead>
-							<TableHead className='w-[100px]'>QR Code</TableHead>
-							{(user?.role === "admin" || user?.role === "master_admin") && (
-								<>
-									<TableHead className='w-[300px]'>Assigned To</TableHead>
-									<TableHead>Actions</TableHead>
-								</>
-							)}
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{properties.map((p) => (
-							<TableRow key={p.id}>
-								<TableCell className='font-medium '>{p.id}</TableCell>
-								<TableCell className='font-medium'>{p.name}</TableCell>
-								<TableCell className=''>{p.description}</TableCell>
-								<TableCell className='p-0 py-2'>
-									{" "}
-									{p.qrCode && <Image src={p.qrCode} alt='QR' className='w-20 h-20' width={100} height={100} />}
-								</TableCell>
-								<TableCell>
-									{(user?.role === "admin" || user?.role === "master_admin") && (
-										<div className='max-w-[300px]'>
-											{assignMode[p.id] ? (
-												<div className='flex gap-2 items-center'>
-													<select
-														className='p-2 border rounded'
-														value={selectedUser[p.id] || ""}
-														onChange={(e) => {
-															const newUserId = e.target.value;
-															setSelectedUser((prev) => ({ ...prev, [p.id]: newUserId }));
-														}}>
-														<option value=''>Select Staff</option>
-														{users.map((u) => (
-															<option key={u.id} value={u.id}>
-																{u.name}
-															</option>
-														))}
-													</select>
+				<div className='rounded border shadow-md'>
+					<Table>
+						<TableHeader>
+							<TableRow className='bg-muted/50 '>
+								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Product Name</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Description</TableHead>
+								<TableHead className='w-[100px] text-muted-foreground'>QR Code</TableHead>
+								{(user?.role === "admin" || user?.role === "master_admin") && (
+									<>
+										<TableHead className='w-[400px] text-muted-foreground'>Assigned To</TableHead>
+										<TableHead className='text-right pr-4 text-muted-foreground'>Actions</TableHead>
+									</>
+								)}
+							</TableRow>
+						</TableHeader>
+						<TableBody className=''>
+							{properties.map((p) => (
+								<TableRow className='hover:bg-muted/50' key={p.id}>
+									<TableCell className='font-medium pl-4'>{p.id}</TableCell>
+									<TableCell className='font-medium'>{p.name}</TableCell>
+									<TableCell className=''>{p.description}</TableCell>
+									<TableCell className='p-0 py-2'>
+										{" "}
+										{p.qrCode && <Image src={p.qrCode} alt='QR' className='w-20 h-20' width={100} height={100} />}
+									</TableCell>
+									<TableCell>
+										{(user?.role === "admin" || user?.role === "master_admin") && (
+											<div className='max-w-[300px]'>
+												{assignMode[p.id] ? (
+													<div className='flex gap-2 items-center'>
+														<select
+															className='p-2 border rounded'
+															value={selectedUser[p.id] || ""}
+															onChange={(e) => {
+																const newUserId = e.target.value;
+																setSelectedUser((prev) => ({ ...prev, [p.id]: newUserId }));
+															}}>
+															<option value=''>Select Staff</option>
+															{users.map((u) => (
+																<option key={u.id} value={u.id}>
+																	{u.name}
+																</option>
+															))}
+														</select>
+														<Button
+															className='bg-green-600 group hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer'
+															onClick={() => handleAssign(p.id)}>
+															<Check strokeWidth={3} />
+														</Button>
+														<Button
+															className='bg-red-600 group hover:bg-white hover:text-red-600 text-white hover:border-red-600 border-2 cursor-pointer'
+															onClick={() =>
+																setAssignMode((prev) => ({
+																	...prev,
+																	[p.id]: false,
+																}))
+															}>
+															<X strokeWidth={3} />
+														</Button>
+
+														<Dialog open={openDialog === p.id} onOpenChange={(isOpen) => !isOpen && setOpenDialog(null)}>
+															<DialogContent className='xl:max-w-md'>
+																<DialogHeader>
+																	<DialogTitle>Reassign Property</DialogTitle>
+																	<DialogDescription>
+																		This property is currently assigned to <strong>{p.assignedTo}</strong>. Do you want to reassign it?
+																	</DialogDescription>
+																</DialogHeader>
+																<DialogFooter className='mt-4'>
+																	<Button
+																		onClick={() => {
+																			if (pendingReassign) {
+																				// Apply selection
+																				setSelectedUser((prev) => ({
+																					...prev,
+																					[pendingReassign.propertyId]: pendingReassign.newUserId,
+																				}));
+																				// Proceed to assignment with confirmation override
+																				handleAssign(pendingReassign.propertyId, true);
+																				setPendingReassign(null);
+																			}
+																			setOpenDialog(null);
+																		}}
+																		className='bg-green-600 hover:bg-green-700 text-white'>
+																		Confirm
+																	</Button>
+																	<Button
+																		variant='outline'
+																		onClick={() => {
+																			setPendingReassign(null);
+																			setOpenDialog(null);
+																		}}>
+																		Cancel
+																	</Button>
+																</DialogFooter>
+															</DialogContent>
+														</Dialog>
+													</div>
+												) : p.assignedTo ? (
+													<div className='flex gap-2 items-center w-full'>
+														<p className='text-sm text-muted-foreground'>{p.assignedTo}</p>
+														<Button
+															variant='ghost'
+															onClick={() => {
+																setSelectedUser((prev) => ({
+																	...prev,
+																	[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
+																}));
+																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
+															}}
+															className='transition-none ml-auto'>
+															Reassign
+														</Button>
+													</div>
+												) : (
 													<Button
-														className='bg-green-600 group hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer'
-														onClick={() => handleAssign(p.id)}>
-														<Check strokeWidth={3} />
-													</Button>
-													<Button
-														className='bg-red-600 group hover:bg-white hover:text-red-600 text-white hover:border-red-600 border-2 cursor-pointer'
+														className='cursor-pointer'
+														variant='outline'
+														size='sm'
 														onClick={() =>
 															setAssignMode((prev) => ({
 																...prev,
-																[p.id]: false,
+																[p.id]: true,
 															}))
 														}>
-														<X strokeWidth={3} />
+														Assign
 													</Button>
+												)}
+											</div>
+										)}
+									</TableCell>
 
-													<Dialog open={openDialog === p.id} onOpenChange={(isOpen) => !isOpen && setOpenDialog(null)}>
-														<DialogContent className='xl:max-w-md'>
-															<DialogHeader>
-																<DialogTitle>Reassign Property</DialogTitle>
-																<DialogDescription>
-																	This property is currently assigned to <strong>{p.assignedTo}</strong>. Do you want to reassign it?
-																</DialogDescription>
-															</DialogHeader>
-															<DialogFooter className='mt-4'>
-																<Button
-																	onClick={() => {
-																		if (pendingReassign) {
-																			// Apply selection
-																			setSelectedUser((prev) => ({
-																				...prev,
-																				[pendingReassign.propertyId]: pendingReassign.newUserId,
-																			}));
-																			// Proceed to assignment with confirmation override
-																			handleAssign(pendingReassign.propertyId, true);
-																			setPendingReassign(null);
-																		}
-																		setOpenDialog(null);
-																	}}
-																	className='bg-green-600 hover:bg-green-700 text-white'>
-																	Confirm
-																</Button>
-																<Button
-																	variant='outline'
-																	onClick={() => {
-																		setPendingReassign(null);
-																		setOpenDialog(null);
-																	}}>
+									{(user?.role === "admin" || user?.role === "master_admin") && (
+										<TableCell className='pr-4'>
+											<div className='h-full flex gap-2 items-center'>
+												<Button
+													variant={"outline"}
+													className='border-blue-500 text-blue-500 hover:text-white hover:bg-blue-500 cursor-pointer'
+													onClick={() => router.push(`/properties/edit/${p.id}`)}>
+													Edit{" "}
+												</Button>
+												<Dialog>
+													<DialogTrigger asChild>
+														<Button variant='outline' className='border-red-500 text-red-500 hover:text-white hover:bg-red-500 cursor-pointer'>
+															Delete
+														</Button>
+													</DialogTrigger>
+													<DialogContent className='xl:max-w-md'>
+														<DialogHeader>
+															<DialogTitle>Are you sure?</DialogTitle>
+															<DialogDescription>
+																{p?.assignedTo
+																	? "This property is currently assigned. Do you still want to delete it?"
+																	: "Do you want to delete this property?"}
+															</DialogDescription>
+														</DialogHeader>
+														<DialogFooter>
+															<DialogClose asChild>
+																<Button variant='outline' className='cursor-pointer'>
 																	Cancel
 																</Button>
-															</DialogFooter>
-														</DialogContent>
-													</Dialog>
-												</div>
-											) : p.assignedTo ? (
-												<div className='flex gap-2 items-center'>
-													<p className='text-sm text-muted-foreground'>{p.assignedTo}</p>
-													<Button
-														variant='ghost'
-														onClick={() => {
-															setSelectedUser((prev) => ({
-																...prev,
-																[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-															}));
-															setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-														}}
-														className='transition-none'>
-														Reassign
-													</Button>
-												</div>
-											) : (
-												<Button
-													className='cursor-pointer'
-													variant='outline'
-													size='sm'
-													onClick={() =>
-														setAssignMode((prev) => ({
-															...prev,
-															[p.id]: true,
-														}))
-													}>
-													Assign
-												</Button>
-											)}
-										</div>
-									)}
-								</TableCell>
-
-								{(user?.role === "admin" || user?.role === "master_admin") && (
-									<TableCell className=''>
-										<div className='h-full flex gap-2 items-center'>
-											<Button
-												variant={"outline"}
-												className='border-blue-500 text-blue-500 hover:text-white hover:bg-blue-500 cursor-pointer'
-												onClick={() => router.push(`/properties/edit/${p.id}`)}>
-												Edit{" "}
-											</Button>
-											<Dialog>
-												<DialogTrigger asChild>
-													<Button variant='outline' className='border-red-500 text-red-500 hover:text-white hover:bg-red-500 cursor-pointer'>
-														Delete
-													</Button>
-												</DialogTrigger>
-												<DialogContent className='xl:max-w-md'>
-													<DialogHeader>
-														<DialogTitle>Are you sure?</DialogTitle>
-														<DialogDescription>
-															{p?.assignedTo
-																? "This property is currently assigned. Do you still want to delete it?"
-																: "Do you want to delete this property?"}
-														</DialogDescription>
-													</DialogHeader>
-													<DialogFooter>
-														<DialogClose asChild>
-															<Button variant='outline' className='cursor-pointer'>
-																Cancel
+															</DialogClose>
+															<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
+																Confirm
 															</Button>
-														</DialogClose>
-														<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
-															Confirm
-														</Button>
-													</DialogFooter>
-												</DialogContent>
-											</Dialog>
-										</div>
-									</TableCell>
-								)}
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+														</DialogFooter>
+													</DialogContent>
+												</Dialog>
+											</div>
+										</TableCell>
+									)}
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</div>
 			</div>
 		</ProtectedRoute>
 	);
