@@ -7,6 +7,8 @@ import { useAuth } from "@/context/AuthContext";
 import { User } from "@/types";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { PlusCircle } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const UsersPage = () => {
 	const { token, user } = useAuth();
@@ -33,17 +35,31 @@ const UsersPage = () => {
 						onClick={() => {
 							router.push("/admins/add");
 						}}>
+						<PlusCircle className='mr-1 h-4 w-4' />
 						Create New Admin
 					</Button>
 				</div>
-				<ul className='space-y-2'>
-					{users.map((u) => (
-						<li key={u.id} className='p-4 border rounded'>
-							<p className='font-semibold'>{u.name}</p>
-							<p>{u.email}</p>
-						</li>
-					))}
-				</ul>
+				<div className='rounded border shadow-md'>
+					<Table>
+						<TableHeader>
+							<TableRow className='bg-muted/50 '>
+								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Name</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Email</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Actions</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody className=''>
+							{users.map((u) => (
+								<TableRow className='hover:bg-muted/50' key={u.id}>
+									<TableCell className='font-medium pl-4'>{u.id}</TableCell>
+									<TableCell className='font-medium'>{u.name}</TableCell>
+									<TableCell className=''>{u.email}</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</div>
 			</div>
 		</ProtectedRoute>
 	);

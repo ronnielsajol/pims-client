@@ -5,5 +5,4 @@ export interface User {
 	name: string;
 	email: string;
 	role: Role;
-	password?: string; // optional if you're fetching users without passwords
 }
