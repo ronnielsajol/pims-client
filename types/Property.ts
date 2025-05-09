@@ -6,4 +6,5 @@ export interface Property {
 	createdAt?: string;
 	updatedAt?: string;
 	assignedTo?: string;
+	isNew?: boolean;
 }

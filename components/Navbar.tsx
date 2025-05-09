@@ -27,7 +27,7 @@ const Navbar = () => {
 						href='/dashboard'
 						className={cn(
 							isActive("/dashboard") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 hover:bg-gray-400/30"
+							"p-2 hover:bg-gray-400/30 transition-colors"
 						)}>
 						Home
 					</Link>
@@ -35,7 +35,7 @@ const Navbar = () => {
 						href='/properties'
 						className={cn(
 							isActive("/properties") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 hover:bg-gray-400/30"
+							"p-2 hover:bg-gray-400/30 transition-colors"
 						)}>
 						Properties
 					</Link>
@@ -45,7 +45,7 @@ const Navbar = () => {
 							href='/users'
 							className={cn(
 								isActive("/users") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 hover:bg-gray-400/30"
+								"p-2 hover:bg-gray-400/30 transition-colors"
 							)}>
 							Users
 						</Link>
@@ -55,7 +55,7 @@ const Navbar = () => {
 							href='/admins'
 							className={cn(
 								isActive("/admins") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 hover:bg-gray-400/30"
+								"p-2 hover:bg-gray-400/30 transition-colors"
 							)}>
 							Admins
 						</Link>
