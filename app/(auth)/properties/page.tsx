@@ -5,7 +5,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
 import { Property, User } from "@/types";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
@@ -46,8 +46,10 @@ export default function PropertiesPage() {
 	const [newProperty, setNewProperty] = useState({ name: "", description: "" });
 	const [addLoading, setAddLoading] = useState(false);
 	const [deleteLoading, setDeleteLoading] = useState(false);
+	const [editMode, setEditMode] = useState<{ [propertyId: number]: boolean }>({});
+	const [editValues, setEditValues] = useState<{ [propertyId: number]: { name: string; description: string } }>({});
 
-	const router = useRouter();
+	// const router = useRouter();
 
 	const fetchProperties = async () => {
 		if (!token || !user) return;
@@ -112,6 +114,23 @@ export default function PropertiesPage() {
 		} catch (err) {
 			console.error("Assign error:", err);
 			toast.error("Failed to assign property");
+		}
+	};
+
+	const handleSaveEdit = async (propertyId: number) => {
+		const values = editValues[propertyId];
+		if (!values?.name || !values?.description) return;
+
+		const toastId = toast.loading("Updating property...");
+
+		try {
+			await apiFetch(`/properties/update/${propertyId}`, "PATCH", values, token ?? "");
+			toast.success("Property updated!", { id: toastId });
+			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
+			fetchProperties();
+		} catch (error) {
+			toast.error("Failed to update property.");
+			console.error(error);
 		}
 	};
 
@@ -182,11 +201,50 @@ export default function PropertiesPage() {
 										exit={{ opacity: 0 }}
 										transition={{ duration: 0.3 }}>
 										<TableCell className='font-medium pl-4'>{p.id}</TableCell>
-										<TableCell className='font-medium'>{p.name}</TableCell>
-										<TableCell className=''>{p.description}</TableCell>
+										<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+											{" "}
+											{editMode[p.id] ? (
+												<input
+													value={editValues[p.id]?.name || ""}
+													onChange={(e) =>
+														setEditValues((prev) => ({
+															...prev,
+															[p.id]: { ...prev[p.id], name: e.target.value },
+														}))
+													}
+													className='p-2 border rounded w-full'
+												/>
+											) : (
+												p.name
+											)}
+										</TableCell>
+										<TableCell className={cn("", editMode[p.id] && "pl-2")}>
+											{" "}
+											{editMode[p.id] ? (
+												<input
+													value={editValues[p.id]?.description || ""}
+													onChange={(e) =>
+														setEditValues((prev) => ({
+															...prev,
+															[p.id]: { ...prev[p.id], name: e.target.value },
+														}))
+													}
+													className='p-2 border rounded w-full'
+												/>
+											) : (
+												p.description
+											)}
+										</TableCell>
 										<TableCell className='p-0 py-2'>
 											<div className='relative w-20 h-20'>
-												{p.qrCode && <Image src={p.qrCode} alt='QR' fill className='object-contain' />}
+												{p.qrCode && (
+													<Image
+														src={p.qrCode}
+														alt='QR'
+														fill
+														className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && "brightness-50 opacity-50")}
+													/>
+												)}
 											</div>
 										</TableCell>
 										<TableCell>
@@ -287,53 +345,75 @@ export default function PropertiesPage() {
 										{(user?.role === "admin" || user?.role === "master_admin") && (
 											<TableCell className='pr-4'>
 												<div className='h-full flex gap-2 items-center justify-end'>
-													{p.assignedTo && (
-														<Button
-															variant='outline'
-															onClick={() => {
-																setSelectedUser((prev) => ({
-																	...prev,
-																	[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-																}));
-																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-															}}
-															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-															Reassign
-														</Button>
-													)}
-													<Button
-														variant={"outline"}
-														className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
-														onClick={() => router.push(`/properties/edit/${p.id}`)}>
-														Edit{" "}
-													</Button>
-													<Dialog>
-														<DialogTrigger asChild>
-															<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
-																Delete
+													{editMode[p.id] ? (
+														<>
+															<Button
+																variant='outline'
+																className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
+																onClick={() => handleSaveEdit(p.id)}>
+																Save
 															</Button>
-														</DialogTrigger>
-														<DialogContent className='xl:max-w-md'>
-															<DialogHeader>
-																<DialogTitle>Are you sure?</DialogTitle>
-																<DialogDescription>
-																	{p?.assignedTo
-																		? "This property is currently assigned. Do you still want to delete it?"
-																		: "Do you want to delete this property?"}
-																</DialogDescription>
-															</DialogHeader>
-															<DialogFooter>
-																<DialogClose asChild>
-																	<Button variant='outline' className='cursor-pointer'>
-																		Cancel
-																	</Button>
-																</DialogClose>
-																<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
-																	{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
+															<Button
+																variant='outline'
+																className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'
+																onClick={() => setEditMode((prev) => ({ ...prev, [p.id]: false }))}>
+																Cancel
+															</Button>
+														</>
+													) : (
+														<>
+															{p.assignedTo && (
+																<Button
+																	variant='outline'
+																	onClick={() => {
+																		setSelectedUser((prev) => ({
+																			...prev,
+																			[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
+																		}));
+																		setAssignMode((prev) => ({ ...prev, [p.id]: true }));
+																	}}
+																	className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+																	Reassign
 																</Button>
-															</DialogFooter>
-														</DialogContent>
-													</Dialog>
+															)}
+															<Button
+																variant='outline'
+																onClick={() => {
+																	setEditValues((prev) => ({ ...prev, [p.id]: { name: p.name, description: p.description } }));
+																	setEditMode((prev) => ({ ...prev, [p.id]: true }));
+																}}
+																className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+																Edit
+															</Button>
+															<Dialog>
+																<DialogTrigger asChild>
+																	<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
+																		Delete
+																	</Button>
+																</DialogTrigger>
+																<DialogContent className='xl:max-w-md'>
+																	<DialogHeader>
+																		<DialogTitle>Are you sure?</DialogTitle>
+																		<DialogDescription>
+																			{p?.assignedTo
+																				? "This property is currently assigned. Do you still want to delete it?"
+																				: "Do you want to delete this property?"}
+																		</DialogDescription>
+																	</DialogHeader>
+																	<DialogFooter>
+																		<DialogClose asChild>
+																			<Button variant='outline' className='cursor-pointer'>
+																				Cancel
+																			</Button>
+																		</DialogClose>
+																		<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
+																			{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
+																		</Button>
+																	</DialogFooter>
+																</DialogContent>
+															</Dialog>
+														</>
+													)}
 												</div>
 											</TableCell>
 										)}
