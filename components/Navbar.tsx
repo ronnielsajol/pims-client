@@ -2,14 +2,25 @@
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
+import { ChevronDown, LogOut, User } from "lucide-react";
 
 const Navbar = () => {
 	const { user, logout } = useAuth();
 	const pathName = usePathname();
+	const [isOpen, setIsOpen] = useState(false);
 
 	const isActive = (href: string) => {
 		return pathName === href;
@@ -26,16 +37,16 @@ const Navbar = () => {
 					<Link
 						href='/dashboard'
 						className={cn(
-							isActive("/dashboard") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 hover:bg-gray-400/30 transition-colors"
+							isActive("/dashboard") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
+							"p-2 border-b-2 hover:border-b-[#800000] "
 						)}>
 						Home
 					</Link>
 					<Link
 						href='/properties'
 						className={cn(
-							isActive("/properties") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 hover:bg-gray-400/30 transition-colors"
+							isActive("/properties") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
+							"p-2 border-b-2 hover:border-b-[#800000] "
 						)}>
 						Properties
 					</Link>
@@ -44,8 +55,8 @@ const Navbar = () => {
 						<Link
 							href='/users'
 							className={cn(
-								isActive("/users") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 hover:bg-gray-400/30 transition-colors"
+								isActive("/users") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
+								"p-2 border-b-2 hover:border-b-[#800000] "
 							)}>
 							Users
 						</Link>
@@ -54,21 +65,41 @@ const Navbar = () => {
 						<Link
 							href='/admins'
 							className={cn(
-								isActive("/admins") ? "border-b-2 border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 hover:bg-gray-400/30 transition-colors"
+								isActive("/admins") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
+								"p-2 border-b-2 hover:border-b-[#800000] "
 							)}>
 							Admins
 						</Link>
 					)}
 				</div>
 				<div className='font-medium text-[#800000] flex items-center gap-4'>
-					<h1 className=''>{user?.name}</h1>
-					<Button
-						variant='outline'
-						onClick={logout}
-						className='cursor-pointer border-2 border-[#800000] text-[#800000] hover:bg-[#800000] hover:text-white'>
-						Logout
-					</Button>
+					<DropdownMenu onOpenChange={setIsOpen}>
+						<DropdownMenuTrigger asChild className='cursor-pointer'>
+							<Button variant={"outline"} className='flex flex-row items-center justify-center hover:text-[#630000]'>
+								{user?.name}{" "}
+								<ChevronDown
+									className={cn("h-4 w-4 transition-transform duration-200 ease-out pt-0.5", isOpen && "transform rotate-180")}
+								/>{" "}
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent className='w-56'>
+							<DropdownMenuLabel>My Account</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuGroup>
+								<DropdownMenuItem>
+									<User />
+									<Link href='/dashboard'>Profile</Link>
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={logout}>
+									<LogOut />
+									<Button variant='ghost' className='cursor-pointer pl-0 text-[#800000]'>
+										Logout
+									</Button>{" "}
+								</DropdownMenuItem>
+							</DropdownMenuGroup>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 		</nav>

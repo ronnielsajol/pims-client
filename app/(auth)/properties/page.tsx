@@ -24,6 +24,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
 import { AnimatePresence } from "motion/react";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 export default function PropertiesPage() {
 	const { token, user } = useAuth();
@@ -185,27 +194,28 @@ export default function PropertiesPage() {
 												<div className='max-w-[300px]'>
 													{assignMode[p.id] ? (
 														<div className='flex gap-2 items-center'>
-															<select
-																className='p-2 border rounded'
-																value={selectedUser[p.id] || ""}
-																onChange={(e) => {
-																	const newUserId = e.target.value;
-																	setSelectedUser((prev) => ({ ...prev, [p.id]: newUserId }));
-																}}>
-																<option value=''>Select Staff</option>
-																{users.map((u) => (
-																	<option key={u.id} value={u.id}>
-																		{u.name}
-																	</option>
-																))}
-															</select>
+															<Select>
+																<SelectTrigger className='w-[180px]'>
+																	<SelectValue placeholder='Select Staff ' />
+																</SelectTrigger>
+																<SelectContent>
+																	<SelectGroup>
+																		<SelectLabel>Staff</SelectLabel>
+																		{users.map((u) => (
+																			<SelectItem key={u.id} value={String(u.id)} className='hover:bg-gray-600'>
+																				{u.name}
+																			</SelectItem>
+																		))}
+																	</SelectGroup>
+																</SelectContent>
+															</Select>
 															<Button
-																className='bg-green-600 hover:bg-white hover:text-green-600 text-white hover:border-green-600 border-2 cursor-pointer'
+																className='border-green-200 bg-transparent text-green-500 hover:text-green-700  hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
 																onClick={() => handleAssign(p.id)}>
 																<Check strokeWidth={3} />
 															</Button>
 															<Button
-																className='bg-red-600 hover:bg-white hover:text-red-600 text-white hover:border-red-600 border-2 cursor-pointer'
+																className='border-red-200 bg-transparent text-red-500 hover:text-red-700  hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
 																onClick={() =>
 																	setAssignMode((prev) => ({
 																		...prev,
@@ -276,19 +286,21 @@ export default function PropertiesPage() {
 
 										{(user?.role === "admin" || user?.role === "master_admin") && (
 											<TableCell className='pr-4'>
-												<div className='h-full flex gap-2 items-center'>
-													<Button
-														variant='outline'
-														onClick={() => {
-															setSelectedUser((prev) => ({
-																...prev,
-																[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-															}));
-															setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-														}}
-														className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-														Reassign
-													</Button>
+												<div className='h-full flex gap-2 items-center justify-end'>
+													{p.assignedTo && (
+														<Button
+															variant='outline'
+															onClick={() => {
+																setSelectedUser((prev) => ({
+																	...prev,
+																	[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
+																}));
+																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
+															}}
+															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+															Reassign
+														</Button>
+													)}
 													<Button
 														variant={"outline"}
 														className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
@@ -331,7 +343,7 @@ export default function PropertiesPage() {
 									<motion.tr
 										initial={{ opacity: 0, x: -10 }}
 										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: -10 }}
+										exit={{ opacity: 0, x: 10 }}
 										transition={{ duration: 0.3 }}>
 										<TableCell>-</TableCell>
 										<TableCell>
