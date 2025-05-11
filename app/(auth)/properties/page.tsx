@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Image from "next/image";
-import { Check, LoaderCircle, PlusCircle, X } from "lucide-react";
+import { Check, ChevronsUpDown, LoaderCircle, PlusCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import {
 	Dialog,
@@ -24,15 +24,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { motion } from "motion/react";
 import { AnimatePresence } from "motion/react";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 
 export default function PropertiesPage() {
 	const { token, user } = useAuth();
@@ -41,6 +34,7 @@ export default function PropertiesPage() {
 	const [selectedUser, setSelectedUser] = useState<{ [propertyId: number]: string }>({});
 	const [assignMode, setAssignMode] = useState<{ [propertyId: number]: boolean }>({});
 	const [openDialog, setOpenDialog] = useState<number | null>(null);
+	const [openUserSelect, setOpenUserSelect] = useState<{ [propertyId: number]: boolean }>({});
 	const [pendingReassign, setPendingReassign] = useState<{ propertyId: number; newUserId: string } | null>(null);
 	const [addMode, setAddMode] = useState(false);
 	const [newProperty, setNewProperty] = useState({ name: "", description: "" });
@@ -252,21 +246,41 @@ export default function PropertiesPage() {
 												<div className='max-w-[300px]'>
 													{assignMode[p.id] ? (
 														<div className='flex gap-2 items-center'>
-															<Select>
-																<SelectTrigger className='w-[180px]'>
-																	<SelectValue placeholder='Select Staff ' />
-																</SelectTrigger>
-																<SelectContent>
-																	<SelectGroup>
-																		<SelectLabel>Staff</SelectLabel>
-																		{users.map((u) => (
-																			<SelectItem key={u.id} value={String(u.id)} className='hover:bg-gray-600'>
-																				{u.name}
-																			</SelectItem>
-																		))}
-																	</SelectGroup>
-																</SelectContent>
-															</Select>
+															<Popover
+																open={openUserSelect[p.id]}
+																onOpenChange={(isOpen) => setOpenUserSelect((prev) => ({ ...prev, [p.id]: isOpen }))}>
+																<PopoverTrigger asChild>
+																	<Button
+																		variant={"outline"}
+																		role='combobox'
+																		className={cn("w-[180px] justify-between", !selectedUser[p.id] && "text-gray-500")}>
+																		{selectedUser[p.id] ? users.find((u) => u.id === Number(selectedUser[p.id]))?.name : "Select Staff"}
+																		<ChevronsUpDown className='opacity-50' />
+																	</Button>
+																</PopoverTrigger>
+																<PopoverContent className='w-[180px] p-0'>
+																	<Command>
+																		<CommandInput placeholder='Search for staff...' />
+																		<CommandEmpty>No staff found.</CommandEmpty>
+																		<CommandGroup>
+																			{users.map((u) => (
+																				<CommandItem
+																					key={u.id}
+																					value={u.name}
+																					onSelect={() => {
+																						setSelectedUser((prev) => ({ ...prev, [p.id]: String(u.id) }));
+																						setOpenUserSelect((prev) => ({ ...prev, [p.id]: false }));
+																					}}
+																					className='cursor-pointer'>
+																					{u.name}
+																					<Check className={cn("ml-auto text-[#800000]", selectedUser[p.id] === String(u.id) ? "opacity-100" : "opacity-0")} />
+																				</CommandItem>
+																			))}
+																		</CommandGroup>
+																	</Command>
+																</PopoverContent>
+															</Popover>
+
 															<Button
 																className='border-green-200 bg-transparent text-green-500 hover:text-green-700  hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
 																onClick={() => handleAssign(p.id)}>
