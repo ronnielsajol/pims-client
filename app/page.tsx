@@ -54,11 +54,11 @@ export default function Home() {
 		}
 	};
 	return (
-		<div className='grid grid-cols-3  gap-y-0 gap-x-0 min-h-screen '>
-			<div className='col-span-2 bg-[#c3c3c3] bg-[url("/images/pup-bg.jpg")] bg-cover'></div>
-			<div className='bg-[#c3c3c3] flex justify-start items-center flex-col pt-20 px-4 '>
+		<div className='max-xl:relative  laptop:grid laptop:grid-cols-3  gap-y-0 gap-x-0 min-h-screen '>
+			<div className='laptop:col-span-2 bg-[#c3c3c3] bg-[url("/images/pup-bg.jpg")] bg-cover h-screen w-full'></div>
+			<div className='bg-[#c3c3c3] flex justify-start items-center flex-col pt-20 px-4 max-xl:absolute max-xl:left-0 max-xl:top-0 max-xl:backdrop-blur-[200px] max-xl:h-full'>
 				<Image src='/images/pup-logo.png' alt='PUP Logo' height={88} width={88} />
-				<h2 className='text-[2rem] font-source-bold'>PUP-PSMO PIMS Module</h2>
+				<h2 className='max-xl:text-center text-[2rem] font-source-bold'>PUP-PSMO PIMS Module</h2>
 				<p>Sign in to start your session</p>
 				<form onSubmit={handleLogin} className='space-y-4 my-5 w-full'>
 					<input
