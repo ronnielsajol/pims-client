@@ -16,7 +16,6 @@ import {
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { ChevronDown, LogOut, Menu, User } from "lucide-react";
-import { Separator } from "./ui/separator";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 const navItems = [
