@@ -37,8 +37,8 @@ const Navbar = () => {
 					<Link
 						href='/dashboard'
 						className={cn(
-							isActive("/dashboard") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 border-b-2 hover:border-b-[#800000] "
+							isActive("/dashboard") ? "border-b-[#800000] text-[#800000] font-semibold" : "border-b-transparent",
+							"p-2 border-b-2  hover:border-b-[#800000] "
 						)}>
 						Home
 					</Link>
@@ -46,7 +46,7 @@ const Navbar = () => {
 						href='/properties'
 						className={cn(
 							isActive("/properties") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
-							"p-2 border-b-2 hover:border-b-[#800000] "
+							"p-2 border-b-2 border-b-transparent hover:border-b-[#800000] "
 						)}>
 						Properties
 					</Link>
@@ -56,7 +56,7 @@ const Navbar = () => {
 							href='/users'
 							className={cn(
 								isActive("/users") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 border-b-2 hover:border-b-[#800000] "
+								"p-2 border-b-2 border-b-transparent hover:border-b-[#800000] "
 							)}>
 							Users
 						</Link>
@@ -66,7 +66,7 @@ const Navbar = () => {
 							href='/admins'
 							className={cn(
 								isActive("/admins") ? " border-b-[#800000] text-[#800000] font-semibold" : "",
-								"p-2 border-b-2 hover:border-b-[#800000] "
+								"p-2 border-b-2 border-b-transparent hover:border-b-[#800000] "
 							)}>
 							Admins
 						</Link>
