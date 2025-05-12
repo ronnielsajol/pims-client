@@ -15,25 +15,38 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, LogOut, Menu, User } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
+
+const navItems = [
+	{ name: "Home", href: "/dashboard" },
+	{ name: "Properties", href: "/properties" },
+	{ name: "Users", href: "/users" },
+	{ name: "Admins", href: "/admins" },
+];
 
 const Navbar = () => {
 	const { user, logout } = useAuth();
 	const pathName = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 
 	const isActive = (href: string) => {
 		return pathName === href;
 	};
 
 	return (
-		<nav className='border-b-2 border py-2 px-2 flex'>
-			<div className='mx-auto max-w-9/12 w-full flex justify-between items-center'>
-				<div className='flex gap-1.5 items-center justify-start'>
-					<Link className='flex gap-1.5 text-[20px] items-center' href='/dashboard'>
-						<Image src='/images/pup-logo.png' alt='PUP Logo' height={33} width={33} />
-						<h3 className='text-[#800000]'>PIMS</h3>
-					</Link>
+		<nav className='border-b-2 border py-2 px-2 flex max-xl:justify-between'>
+			<Link className='flex laptop:hidden gap-1.5 text-[20px] items-center' href='/dashboard'>
+				<Image src='/images/pup-logo.png' alt='PUP Logo' height={50} width={50} />
+				<h3 className='text-[#800000] text-3xl font-medium'>PIMS</h3>
+			</Link>
+			<div className='max-xl:hidden  mx-auto max-w-9/12 w-full flex items-center'>
+				<Link className='flex gap-1.5 text-[20px] items-center' href='/dashboard'>
+					<Image src='/images/pup-logo.png' alt='PUP Logo' height={33} width={33} />
+					<h3 className='text-[#800000]'>PIMS</h3>
+				</Link>
+				<div className='flex gap-1.5 items-center justify-start ml-3'>
 					<Link
 						href='/dashboard'
 						className={cn(
@@ -72,7 +85,7 @@ const Navbar = () => {
 						</Link>
 					)}
 				</div>
-				<div className='font-medium text-[#800000] flex items-center gap-4'>
+				<div className='font-medium text-[#800000] flex items-center gap-4 ml-auto'>
 					<DropdownMenu onOpenChange={setIsOpen}>
 						<DropdownMenuTrigger asChild className='cursor-pointer'>
 							<Button variant={"outline"} className='flex flex-row items-center justify-center hover:text-[#630000]'>
@@ -101,6 +114,52 @@ const Navbar = () => {
 						</DropdownMenuContent>
 					</DropdownMenu>
 				</div>
+			</div>
+			<div className='laptop:hidden'>
+				<Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+					<SheetTrigger asChild className='w-full h-full'>
+						<button
+							onClick={() => setMenuOpen(!menuOpen)}
+							className='relative flex items-center justify-between z-30 h-full w-full cursor-pointer px-2'>
+							<Menu size={36} color='#737373' strokeWidth={3} absoluteStrokeWidth />
+							<span className='sr-only'>Open</span>
+						</button>
+					</SheetTrigger>
+					<SheetTitle className='sr-only'>Menu</SheetTitle>
+					<SheetContent side='right' className='max-xl:w-[250px] pt-10'>
+						<div className='flex flex-col space-y-6 mt-6'>
+							{navItems.map((item) => (
+								<Link
+									href={item.href}
+									key={item.name}
+									onClick={() => setMenuOpen(false)}
+									className={cn(
+										isActive(item.href) ? "border-b-[#800000] text-[#800000] font-semibold" : "border-b-transparent",
+										"mx-10 font-medium w-fit text-xl border-b-2  hover:border-b-[#800000] "
+									)}>
+									{item.name}
+								</Link>
+							))}
+						</div>
+						<div className='mt-auto mb-5 border-t border-gray-300 pt-4 mx-10'>
+							<div className='flex flex-col space-y-3'>
+								<Button variant={"ghost"} className='justify-start text-xl pl-0!' onClick={() => setMenuOpen(false)}>
+									<User strokeWidth={3} /> Profile
+								</Button>
+								<Button
+									variant={"ghost"}
+									className='justify-start text-xl pl-0!'
+									onClick={() => {
+										setMenuOpen(false);
+										logout();
+									}}>
+									<LogOut strokeWidth={3} />
+									Logout
+								</Button>
+							</div>
+						</div>
+					</SheetContent>
+				</Sheet>
 			</div>
 		</nav>
 	);
