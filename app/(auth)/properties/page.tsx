@@ -280,23 +280,6 @@ export default function PropertiesPage() {
 																	</Command>
 																</PopoverContent>
 															</Popover>
-
-															<Button
-																className='border-green-200 bg-transparent text-green-500 hover:text-green-700  hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
-																onClick={() => handleAssign(p.id)}>
-																<Check strokeWidth={3} />
-															</Button>
-															<Button
-																className='border-red-200 bg-transparent text-red-500 hover:text-red-700  hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
-																onClick={() =>
-																	setAssignMode((prev) => ({
-																		...prev,
-																		[p.id]: false,
-																	}))
-																}>
-																<X strokeWidth={3} />
-															</Button>
-
 															<Dialog open={openDialog === p.id} onOpenChange={(isOpen) => !isOpen && setOpenDialog(null)}>
 																<DialogContent className='xl:max-w-md'>
 																	<DialogHeader>
@@ -376,56 +359,81 @@ export default function PropertiesPage() {
 														</>
 													) : (
 														<>
-															{p.assignedTo && (
-																<Button
-																	variant='outline'
-																	onClick={() => {
-																		setSelectedUser((prev) => ({
-																			...prev,
-																			[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-																		}));
-																		setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-																	}}
-																	className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-																	Reassign
-																</Button>
-															)}
-															<Button
-																variant='outline'
-																onClick={() => {
-																	setEditValues((prev) => ({ ...prev, [p.id]: { name: p.name, description: p.description } }));
-																	setEditMode((prev) => ({ ...prev, [p.id]: true }));
-																}}
-																className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-																Edit
-															</Button>
-															<Dialog>
-																<DialogTrigger asChild>
-																	<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
-																		Delete
+															{assignMode[p.id] ? (
+																<>
+																	<Button
+																		className='border-green-200 bg-transparent text-green-500 hover:text-green-700 hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
+																		onClick={() => handleAssign(p.id)}>
+																		<Check strokeWidth={3} />
 																	</Button>
-																</DialogTrigger>
-																<DialogContent className='xl:max-w-md'>
-																	<DialogHeader>
-																		<DialogTitle>Are you sure?</DialogTitle>
-																		<DialogDescription>
-																			{p?.assignedTo
-																				? "This property is currently assigned. Do you still want to delete it?"
-																				: "Do you want to delete this property?"}
-																		</DialogDescription>
-																	</DialogHeader>
-																	<DialogFooter>
-																		<DialogClose asChild>
-																			<Button variant='outline' className='cursor-pointer'>
-																				Cancel
-																			</Button>
-																		</DialogClose>
-																		<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
-																			{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
+																	<Button
+																		className='border-red-200 bg-transparent text-red-500 hover:text-red-700 hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
+																		onClick={() =>
+																			setAssignMode((prev) => ({
+																				...prev,
+																				[p.id]: false,
+																			}))
+																		}>
+																		<X strokeWidth={3} />
+																	</Button>
+																</>
+															) : (
+																<>
+																	{p.assignedTo && (
+																		<Button
+																			variant='outline'
+																			onClick={() => {
+																				setSelectedUser((prev) => ({
+																					...prev,
+																					[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
+																				}));
+																				setAssignMode((prev) => ({ ...prev, [p.id]: true }));
+																			}}
+																			className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+																			Reassign
 																		</Button>
-																	</DialogFooter>
-																</DialogContent>
-															</Dialog>
+																	)}
+																	<Button
+																		variant='outline'
+																		onClick={() => {
+																			setEditValues((prev) => ({
+																				...prev,
+																				[p.id]: { name: p.name, description: p.description },
+																			}));
+																			setEditMode((prev) => ({ ...prev, [p.id]: true }));
+																		}}
+																		className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+																		Edit
+																	</Button>
+																	<Dialog>
+																		<DialogTrigger asChild>
+																			<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
+																				Delete
+																			</Button>
+																		</DialogTrigger>
+																		<DialogContent className='xl:max-w-md'>
+																			<DialogHeader>
+																				<DialogTitle>Are you sure?</DialogTitle>
+																				<DialogDescription>
+																					{p?.assignedTo
+																						? "This property is currently assigned. Do you still want to delete it?"
+																						: "Do you want to delete this property?"}
+																				</DialogDescription>
+																			</DialogHeader>
+																			<DialogFooter>
+																				<DialogClose asChild>
+																					<Button variant='outline' className='cursor-pointer'>
+																						Cancel
+																					</Button>
+																				</DialogClose>
+																				<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
+																					{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
+																				</Button>
+																			</DialogFooter>
+																		</DialogContent>
+																	</Dialog>
+																</>
+															)}
 														</>
 													)}
 												</div>
@@ -460,7 +468,7 @@ export default function PropertiesPage() {
 										<TableCell colSpan={3}>
 											<div className='flex gap-2'>
 												<Button
-													className='bg-green-600 text-white'
+													className='bg-green-600 text-white hover:bg-green-700	'
 													disabled={addLoading}
 													onClick={async () => {
 														setAddLoading(true);
