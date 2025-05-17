@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { apiFetch } from "@/lib/api";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
@@ -42,6 +42,7 @@ export default function PropertiesPage() {
 	const [deleteLoading, setDeleteLoading] = useState(false);
 	const [editMode, setEditMode] = useState<{ [propertyId: number]: boolean }>({});
 	const [editValues, setEditValues] = useState<{ [propertyId: number]: { name: string; description: string } }>({});
+	const addRowRef = useRef<HTMLTableRowElement>(null);
 
 	// const router = useRouter();
 
@@ -77,6 +78,12 @@ export default function PropertiesPage() {
 	useEffect(() => {
 		fetchProperties();
 	}, [token, user]);
+
+	useEffect(() => {
+		if (addMode && addRowRef.current) {
+			addRowRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}, [addMode]);
 
 	const handleAssign = async (propertyId: number, overrideConfirm = false) => {
 		const userId = selectedUser[propertyId];
@@ -236,7 +243,7 @@ export default function PropertiesPage() {
 														src={p.qrCode}
 														alt='QR'
 														fill
-														className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && "brightness-50 opacity-50")}
+														className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && " opacity-40")}
 													/>
 												)}
 											</div>
@@ -443,6 +450,7 @@ export default function PropertiesPage() {
 								))}
 								{addMode && (
 									<motion.tr
+										ref={addRowRef}
 										initial={{ opacity: 0, x: -10 }}
 										animate={{ opacity: 1, x: 0 }}
 										exit={{ opacity: 0, x: 10 }}
