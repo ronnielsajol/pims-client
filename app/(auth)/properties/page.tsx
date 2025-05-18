@@ -236,14 +236,14 @@ export default function PropertiesPage() {
 														src={p.qrCode}
 														alt='QR'
 														fill
-														className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && "brightness-50 opacity-50")}
+														className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && "opacity-50")}
 													/>
 												)}
 											</div>
 										</TableCell>
 										<TableCell>
 											{(user?.role === "admin" || user?.role === "master_admin") && (
-												<div className='max-w-[300px]'>
+												<div className='laptop:min-w-[200px] desktop:min-w-[300px]'>
 													{assignMode[p.id] ? (
 														<div className='flex gap-2 items-center'>
 															<Popover
@@ -318,7 +318,9 @@ export default function PropertiesPage() {
 															</Dialog>
 														</div>
 													) : p.assignedTo ? (
-														<Badge variant='outline' className='font-normal text-muted-foreground py-1 px-4 rounded-3xl-'>
+														<Badge
+															variant='outline'
+															className={cn("font-normal text-muted-foreground py-1 px-4 rounded-3xl", editMode[p.id] && "opacity-50")}>
 															{p.assignedTo}{" "}
 														</Badge>
 													) : (
