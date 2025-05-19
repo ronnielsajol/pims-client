@@ -28,8 +28,8 @@
 @theme {
 	--breakpoint-*: initial;
 	--breakpoint-xl: 50rem;
-	--breakpoint-laptop: 60rem;
-	--breakpint-desktop: 80rem;
+	--breakpoint-laptop: 80rem;
+	--breakpoint-desktop: 100rem;
 }
 
 @theme inline {
