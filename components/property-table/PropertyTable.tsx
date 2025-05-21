@@ -42,11 +42,25 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 	const [openDialog, setOpenDialog] = useState<number | null>(null);
 	const [openUserSelect, setOpenUserSelect] = useState<{ [propertyId: number]: boolean }>({});
 	const [pendingReassign, setPendingReassign] = useState<{ propertyId: number; newUserId: string } | null>(null);
-	const [newProperty, setNewProperty] = useState({ name: "", description: "" });
+	const [newProperty, setNewProperty] = useState({
+		propertyNo: "",
+		description: "",
+		quantity: "",
+		value: "",
+		serialNo: "",
+	});
 	const [addLoading, setAddLoading] = useState(false);
 	const [deleteLoading, setDeleteLoading] = useState(false);
 	const [editMode, setEditMode] = useState<{ [propertyId: number]: boolean }>({});
-	const [editValues, setEditValues] = useState<{ [propertyId: number]: { name: string; description: string } }>({});
+	const [editValues, setEditValues] = useState<{
+		[propertyId: number]: {
+			propertyNo: string;
+			description: string;
+			quantity: string;
+			value: string;
+			serialNo: string;
+		};
+	}>({});
 	const addRowRef = useRef<HTMLTableRowElement>(null);
 
 	const handleAssign = async (propertyId: number, overrideConfirm = false) => {
@@ -84,12 +98,12 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 	const handleSaveEdit = async (propertyId: number) => {
 		const values = editValues[propertyId];
-		if (!values?.name || !values?.description) return;
+		if (!values?.propertyNo || !values?.description || !values?.quantity || !values?.serialNo || !values?.value) return;
 
 		const toastId = toast.loading("Updating property...");
 
 		try {
-			await apiFetch(`/properties/update/${propertyId}`, "PATCH", values, token ?? "");
+			await apiFetch(`/properties/update/${propertyId}`, "PATCH", { property: values }, token ?? "");
 			toast.success("Property updated!", { id: toastId });
 			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
 			fetchProperties();
@@ -139,8 +153,11 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			<TableHeader>
 				<TableRow className='bg-muted/50 '>
 					<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
-					<TableHead className='w-3/12 text-muted-foreground'>Product Name</TableHead>
-					<TableHead className='w-3/12 text-muted-foreground'>Description</TableHead>
+					<TableHead className='w-1/6 text-muted-foreground'>Product Number</TableHead>
+					<TableHead className='w-1/12 text-muted-foreground'>Description</TableHead>
+					<TableHead className='w-1/12 text-muted-foreground'>Quantiy</TableHead>
+					<TableHead className='w-1/12 text-muted-foreground'>Value</TableHead>
+					<TableHead className='w-1/8 text-muted-foreground'>Serial Number</TableHead>
 					<TableHead className='w-[100px] text-muted-foreground'>QR Code</TableHead>
 					{(userRole === "admin" || userRole === "master_admin") && (
 						<>
@@ -165,34 +182,84 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 								{" "}
 								{editMode[p.id] ? (
 									<input
-										value={editValues[p.id]?.name || ""}
+										value={editValues[p.id]?.propertyNo || ""}
 										onChange={(e) =>
 											setEditValues((prev) => ({
 												...prev,
-												[p.id]: { ...prev[p.id], name: e.target.value },
+												[p.id]: { ...prev[p.id], propertyNo: e.target.value },
 											}))
 										}
 										className='p-2 border rounded w-full'
 									/>
 								) : (
-									p.name
+									p.propertyNo
 								)}
 							</TableCell>
 							<TableCell className={cn("", editMode[p.id] && "pl-2")}>
-								{" "}
 								{editMode[p.id] ? (
 									<input
 										value={editValues[p.id]?.description || ""}
 										onChange={(e) =>
 											setEditValues((prev) => ({
 												...prev,
-												[p.id]: { ...prev[p.id], name: e.target.value },
+												[p.id]: { ...prev[p.id], description: e.target.value },
 											}))
 										}
 										className='p-2 border rounded w-full'
 									/>
 								) : (
 									p.description
+								)}
+							</TableCell>
+							<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+								{" "}
+								{editMode[p.id] ? (
+									<input
+										value={editValues[p.id]?.quantity || ""}
+										onChange={(e) =>
+											setEditValues((prev) => ({
+												...prev,
+												[p.id]: { ...prev[p.id], quantity: e.target.value },
+											}))
+										}
+										className='p-2 border rounded w-full'
+									/>
+								) : (
+									p.quantity
+								)}
+							</TableCell>
+							<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+								{" "}
+								{editMode[p.id] ? (
+									<input
+										value={editValues[p.id]?.value || ""}
+										onChange={(e) =>
+											setEditValues((prev) => ({
+												...prev,
+												[p.id]: { ...prev[p.id], value: e.target.value },
+											}))
+										}
+										className='p-2 border rounded w-full'
+									/>
+								) : (
+									p.value
+								)}
+							</TableCell>
+							<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+								{" "}
+								{editMode[p.id] ? (
+									<input
+										value={editValues[p.id]?.serialNo || ""}
+										onChange={(e) =>
+											setEditValues((prev) => ({
+												...prev,
+												[p.id]: { ...prev[p.id], serialNo: e.target.value },
+											}))
+										}
+										className='p-2 border rounded w-full'
+									/>
+								) : (
+									p.serialNo
 								)}
 							</TableCell>
 							<TableCell className='p-0 py-2'>
@@ -364,7 +431,13 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 															onClick={() => {
 																setEditValues((prev) => ({
 																	...prev,
-																	[p.id]: { name: p.name, description: p.description },
+																	[p.id]: {
+																		propertyNo: p.propertyNo,
+																		description: p.description,
+																		quantity: p.quantity,
+																		value: p.value,
+																		serialNo: p.serialNo,
+																	},
 																}));
 																setEditMode((prev) => ({ ...prev, [p.id]: true }));
 															}}
@@ -418,8 +491,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 							<TableCell>
 								<input
 									type='text'
-									value={newProperty.name}
-									onChange={(e) => setNewProperty((prev) => ({ ...prev, name: e.target.value }))}
+									value={newProperty.propertyNo}
+									onChange={(e) => setNewProperty((prev) => ({ ...prev, propertyNo: e.target.value }))}
 									className='p-2 h-8 border rounded w-full'
 									placeholder='Property name'
 								/>
@@ -432,6 +505,33 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 									placeholder='Description'
 								/>
 							</TableCell>
+							<TableCell>
+								<input
+									type='text'
+									value={newProperty.quantity}
+									onChange={(e) => setNewProperty((prev) => ({ ...prev, quantity: e.target.value }))}
+									className='p-2 h-8 border rounded w-full'
+									placeholder='Quantity'
+								/>
+							</TableCell>
+							<TableCell>
+								<input
+									type='text'
+									value={newProperty.serialNo}
+									onChange={(e) => setNewProperty((prev) => ({ ...prev, serialNo: e.target.value }))}
+									className='p-2 h-8 border rounded w-full'
+									placeholder='Serial Number'
+								/>
+							</TableCell>
+							<TableCell>
+								<input
+									type='text'
+									value={newProperty.value}
+									onChange={(e) => setNewProperty((prev) => ({ ...prev, value: e.target.value }))}
+									className='p-2 h-8 border rounded w-full'
+									placeholder='Value'
+								/>
+							</TableCell>
 							<TableCell colSpan={3}>
 								<div className='flex gap-2'>
 									<Button
@@ -440,9 +540,9 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 										onClick={async () => {
 											setAddLoading(true);
 											try {
-												await apiFetch("/properties/add", "POST", newProperty, token ?? "");
+												await apiFetch("/properties/add", "POST", { property: newProperty }, token ?? "");
 												toast.success("Property added!");
-												setNewProperty({ name: "", description: "" });
+												setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
 												setAddMode(false);
 												fetchProperties();
 											} catch (err) {

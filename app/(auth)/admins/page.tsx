@@ -18,7 +18,7 @@ const UsersPage = () => {
 	useEffect(() => {
 		if (!token) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users/admin", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users?roles=admin", "GET", undefined, token ?? "")
 			.then((res) => {
 				setUsers(res.data);
 			})
@@ -36,7 +36,7 @@ const UsersPage = () => {
 							router.push("/admins/add");
 						}}>
 						<PlusCircle className='mr-1 h-4 w-4' />
-						Create New Admin
+						Create New Account
 					</Button>
 				</div>
 				<div className='rounded border shadow-md'>

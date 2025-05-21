@@ -36,7 +36,7 @@ export default function PropertiesPage() {
 				);
 				setProperties(propsRes.data);
 
-				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token);
+				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined, token);
 				setUsers(usersRes.data);
 			}
 		} catch (error) {
