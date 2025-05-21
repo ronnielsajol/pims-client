@@ -21,7 +21,8 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 const allNavItems = [
 	{ name: "Home", href: "/dashboard" },
 	{ name: "Properties", href: "/properties" },
-	{ name: "Users", href: "/users", roles: ["admin", "master_admin"] },
+	{ name: "Property Custodians", href: "/property_custodians", roles: ["admin", "master_admin"] },
+	{ name: "Staffs", href: "/users", roles: ["admin", "master_admin"] },
 	{ name: "Admins", href: "/admins", roles: ["master_admin"] },
 ];
 

@@ -18,7 +18,7 @@ const UsersPage = () => {
 	useEffect(() => {
 		if (!token) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined, token ?? "")
 			.then((res) => {
 				setUsers(res.data);
 			})
@@ -29,14 +29,14 @@ const UsersPage = () => {
 		<ProtectedRoute>
 			<div className='p-8 w-full'>
 				<div className='flex justify-between w-full'>
-					<h2 className='text-2xl font-bold mb-4'>All User</h2>
+					<h2 className='text-2xl font-bold mb-4'>All Staff</h2>
 					<Button
 						className='bg-green-600 cursor-pointer hover:bg-green-500'
 						onClick={() => {
 							router.push("/users/add");
 						}}>
 						<PlusCircle className='mr-1 h-4 w-4' />
-						Create New User
+						Create New Account
 					</Button>
 				</div>
 				<div className='rounded border shadow-md'>
