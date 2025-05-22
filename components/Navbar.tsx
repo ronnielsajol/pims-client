@@ -34,7 +34,7 @@ const Navbar = () => {
 
 	const isActive = (href: string) => {
 		console.log(href, pathName, pathName === href);
-		return pathName === href;
+		return pathName.startsWith(href);
 	};
 
 	// Filter based on role
@@ -56,7 +56,7 @@ const Navbar = () => {
 					<Image src='/images/pup-logo.png' alt='PUP Logo' height={33} width={33} />
 					<h3 className='text-[#800000]'>PIMS</h3>
 				</Link>
-				<div className='flex gap-1.5 items-center justify-start ml-3'>
+				<div className='flex gap-4 items-center justify-start ml-3'>
 					{navItems.map((item) => (
 						<Link
 							key={item.name}

@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const UsersPage = () => {
+const AdminsPage = () => {
 	const { token, user } = useAuth();
 	const [users, setUsers] = useState<User[]>([]);
 	const router = useRouter();
@@ -31,7 +31,7 @@ const UsersPage = () => {
 				<div className='flex justify-between w-full'>
 					<h2 className='text-2xl font-bold mb-4'>All Admin</h2>
 					<Button
-						className='bg-green-600 cursor-pointer hover:bg-green-500'
+						className='bg-green-500 cursor-pointer hover:bg-green-600'
 						onClick={() => {
 							router.push("/admins/add");
 						}}>
@@ -43,10 +43,10 @@ const UsersPage = () => {
 					<Table>
 						<TableHeader>
 							<TableRow className='bg-muted/50 '>
-								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Name</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Email</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Actions</TableHead>
+								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
+								<TableHead className=' text-muted-foreground'>Name</TableHead>
+								<TableHead className=' text-muted-foreground'>Email</TableHead>
+								<TableHead className=' text-muted-foreground'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody className=''>
@@ -65,4 +65,4 @@ const UsersPage = () => {
 	);
 };
 
-export default UsersPage;
+export default AdminsPage;

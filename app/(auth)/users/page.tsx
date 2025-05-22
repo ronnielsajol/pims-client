@@ -31,7 +31,7 @@ const UsersPage = () => {
 				<div className='flex justify-between w-full'>
 					<h2 className='text-2xl font-bold mb-4'>All Staff</h2>
 					<Button
-						className='bg-green-600 cursor-pointer hover:bg-green-500'
+						className='bg-green-500 cursor-pointer hover:bg-green-600'
 						onClick={() => {
 							router.push("/users/add");
 						}}>
@@ -43,7 +43,7 @@ const UsersPage = () => {
 					<Table>
 						<TableHeader>
 							<TableRow className='bg-muted/50'>
-								<TableHead className='text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
 								<TableHead className='text-muted-foreground'>Name</TableHead>
 								<TableHead className='text-muted-foreground'>Email</TableHead>
 								<TableHead className='text-muted-foreground'>Actions</TableHead>
