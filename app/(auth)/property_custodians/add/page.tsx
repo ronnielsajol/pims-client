@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-export default function AddAdminPage() {
+export default function AddCustodianPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -27,13 +27,13 @@ export default function AddAdminPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "admin" }, token ?? "");
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "property_custodian" }, token ?? "");
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");
 			setEmail("");
 			setPassword("");
-			router.push("/admins");
+			router.push("/property_custodians");
 		} catch (err: unknown) {
 			const error = err as ApiError;
 			console.error("API Error:", error.message || error.error);
@@ -50,10 +50,10 @@ export default function AddAdminPage() {
 			<div className='relative p-8 w-10/12 mx-auto flex flex-col justify-start items-center'>
 				<div className='container max-w-3xl py-10'>
 					<Link
-						href='/admins'
+						href='/property_custodians'
 						className='inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6'>
 						<ArrowLeft className='mr-2 h-4 w-4' />
-						Back to Admins
+						Back to Property Custodians
 					</Link>
 
 					<form onSubmit={handleSubmit}>
@@ -61,9 +61,9 @@ export default function AddAdminPage() {
 							<CardHeader className='space-y-1'>
 								<div className='flex items-center gap-2'>
 									<Building2 className='h-5 w-5 text-primary' />
-									<CardTitle className='text-2xl'>Create New Admin</CardTitle>
+									<CardTitle className='text-2xl'>Create New Property Custodian</CardTitle>
 								</div>
-								<CardDescription>Enter the details below to create a new admin account</CardDescription>
+								<CardDescription>Enter the details below to create a new property custodian account</CardDescription>
 							</CardHeader>
 							<CardContent className='space-y-4'>
 								<div className='space-y-2'>
@@ -72,7 +72,7 @@ export default function AddAdminPage() {
 										value={name}
 										required
 										id='name'
-										placeholder="Enter admin's full name"
+										placeholder="Enter custodian's full name"
 										autoComplete='name'
 										onChange={(e) => {
 											setName(e.target.value);
@@ -114,7 +114,7 @@ export default function AddAdminPage() {
 								</div>
 							</CardContent>
 							<CardFooter className='flex justify-between border-t pt-6'>
-								<Button variant='outline' type='button' onClick={() => router.push("/admins")}>
+								<Button variant='outline' type='button' onClick={() => router.push("/property_custodians")}>
 									Cancel
 								</Button>
 								<Button type='submit' className='gap-2 cursor-pointer bg-green-500 hover:bg-green-600' disabled={loading}>

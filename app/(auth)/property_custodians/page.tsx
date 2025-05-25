@@ -6,11 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 // import { useRouter } from "next/navigation";
 import { User } from "@/types";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from "next/navigation";
 
-const AdminsPage = () => {
+const PropertyCustodiansPage = () => {
 	const { token, user } = useAuth();
 	const [users, setUsers] = useState<User[]>([]);
 	const router = useRouter();
@@ -18,7 +19,7 @@ const AdminsPage = () => {
 	useEffect(() => {
 		if (!token) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users?roles=admin", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users?roles=property_custodian", "GET", undefined, token ?? "")
 			.then((res) => {
 				setUsers(res.data);
 			})
@@ -29,11 +30,11 @@ const AdminsPage = () => {
 		<ProtectedRoute>
 			<div className='p-8 w-full'>
 				<div className='flex justify-between w-full'>
-					<h2 className='text-2xl font-bold mb-4'>All Admin</h2>
+					<h2 className='text-2xl font-bold mb-4'>All Property Custodian</h2>
 					<Button
 						className='bg-green-500 cursor-pointer hover:bg-green-600'
 						onClick={() => {
-							router.push("/admins/add");
+							router.push("/property_custodians/add");
 						}}>
 						<PlusCircle className='mr-1 h-4 w-4' />
 						Create New Account
@@ -43,20 +44,28 @@ const AdminsPage = () => {
 					<Table>
 						<TableHeader>
 							<TableRow className='bg-muted/50 '>
-								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
-								<TableHead className=' text-muted-foreground'>Name</TableHead>
-								<TableHead className=' text-muted-foreground'>Email</TableHead>
-								<TableHead className=' text-muted-foreground'>Actions</TableHead>
+								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Name</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Email</TableHead>
+								<TableHead className='w-3/12 text-muted-foreground'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody className=''>
-							{users.map((u) => (
-								<TableRow className='hover:bg-muted/50' key={u.id}>
-									<TableCell className='font-medium pl-4'>{u.id}</TableCell>
-									<TableCell className='font-medium'>{u.name}</TableCell>
-									<TableCell className=''>{u.email}</TableCell>
-								</TableRow>
-							))}
+							<AnimatePresence>
+								{users.map((u) => (
+									<motion.tr
+										className='hover:bg-muted/50'
+										key={u.id}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.3 }}>
+										<TableCell className='font-medium pl-4'>{u.id}</TableCell>
+										<TableCell className='font-medium'>{u.name}</TableCell>
+										<TableCell className=''>{u.email}</TableCell>
+									</motion.tr>
+								))}
+							</AnimatePresence>
 						</TableBody>
 					</Table>
 				</div>
@@ -65,4 +74,4 @@ const AdminsPage = () => {
 	);
 };
 
-export default AdminsPage;
+export default PropertyCustodiansPage;

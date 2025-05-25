@@ -19,24 +19,28 @@ export default function PropertiesPage() {
 		if (!token || !user) return;
 
 		try {
-			if (user.role === "staff") {
-				const res = await apiFetch<{ success: boolean; message: string; data: Property[] }>(
-					`/properties/staff/${user.id}`,
-					"GET",
-					undefined,
-					token
-				);
-				setProperties(res.data);
-			} else {
-				const propsRes = await apiFetch<{ success: boolean; data: Property[] }>(
-					"/properties/all?includeAssignments=true",
-					"GET",
-					undefined,
-					token
-				);
-				setProperties(propsRes.data);
+			// Fetch assigned properties
+			const propsRes = await apiFetch<{ success: boolean; data: Property[] }>(
+				"/properties?includeAssignments=true",
+				"GET",
+				undefined,
+				token
+			);
+			setProperties(propsRes.data);
 
-				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users/staff", "GET", undefined, token);
+			// Fetch users depending on role
+			if (user.role === "property_custodian") {
+				// Custodian sees staff
+				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined, token);
+				setUsers(usersRes.data);
+			} else if (user.role === "admin" || user.role === "master_admin") {
+				// Admins see custodians
+				const usersRes = await apiFetch<{ success: boolean; data: User[] }>(
+					"/users?roles=property_custodian",
+					"GET",
+					undefined,
+					token
+				);
 				setUsers(usersRes.data);
 			}
 		} catch (error) {
