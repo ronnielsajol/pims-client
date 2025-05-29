@@ -281,9 +281,16 @@ export default function PropertyTableBody({
 											</Dialog>
 										</div>
 									) : p.assignedTo ? (
-										<Badge variant='outline' className='font-normal text-muted-foreground py-1 px-4 rounded-3xl-'>
-											{p.assignedTo}{" "}
-										</Badge>
+										<>
+											<Badge variant='outline' className='font-normal text-muted-foreground py-1 px-4 rounded-3xl-'>
+												{p.assignedTo}{" "}
+											</Badge>
+											{p.reassignmentStatus === "pending" && (
+												<Badge variant='outline' className='ml-2 border-yellow-500 text-yellow-600'>
+													Pending
+												</Badge>
+											)}
+										</>
 									) : (
 										<Button
 											className='cursor-pointer px-3 border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900 font-normal'
@@ -352,7 +359,8 @@ export default function PropertyTableBody({
 																}));
 																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
 															}}
-															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
+															disabled={p.reassignmentStatus === "pending"}>
 															Reassign
 														</Button>
 													)}
