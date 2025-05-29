@@ -10,7 +10,6 @@ export default function PropertyTableHeader({ userRole }: { userRole?: string })
 				<TableHead className='w-1/12 text-muted-foreground'>Quantiy</TableHead>
 				<TableHead className='w-1/12 text-muted-foreground'>Value</TableHead>
 				<TableHead className='w-1/8 text-muted-foreground'>Serial Number</TableHead>
-				<TableHead className='w-[100px] text-muted-foreground'>QR Code</TableHead>
 				{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
 					<>
 						<TableHead className='w-[400px] text-muted-foreground'>Assigned To</TableHead>

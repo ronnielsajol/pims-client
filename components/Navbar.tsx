@@ -2,7 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,8 @@ import {
 } from "./ui/dropdown-menu";
 import { ChevronDown, LogOut, Menu, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { apiFetch } from "@/lib/api";
+import { PendingReassignmentRequest } from "@/types/PendingReassignment";
 
 const allNavItems = [
 	{ name: "Home", href: "/dashboard" },
@@ -24,13 +26,40 @@ const allNavItems = [
 	{ name: "Property Custodians", href: "/property_custodians", roles: ["admin", "master_admin"] },
 	{ name: "Staffs", href: "/users", roles: ["admin", "master_admin"] },
 	{ name: "Admins", href: "/admins", roles: ["master_admin"] },
+	{ name: "Approvals", href: "/approvals", roles: ["master_admin"] },
 ];
 
 const Navbar = () => {
-	const { user, logout } = useAuth();
+	const { user, token, logout } = useAuth();
 	const pathName = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [pendingCount, setPendingCount] = useState(0);
+
+	useEffect(() => {
+		if (user?.role === "master_admin" && token) {
+			const fetchCount = async () => {
+				try {
+					const pendingRequests = await apiFetch<PendingReassignmentRequest[]>(
+						"/properties/reassignments/pending",
+						"GET",
+						undefined,
+						token ?? ""
+					);
+					setPendingCount(pendingRequests.length);
+				} catch (error) {
+					console.error("Failed to fetch pending reassignments count:", error);
+					setPendingCount(0);
+				}
+			};
+
+			fetchCount();
+
+			// Optional: Add polling to refetch every 2 minutes
+			const interval = setInterval(fetchCount, 120000);
+			return () => clearInterval(interval); // Cleanup on component unmount
+		}
+	}, [user]);
 
 	const isActive = (href: string) => {
 		console.log(href, pathName, pathName === href);
@@ -66,6 +95,9 @@ const Navbar = () => {
 								isActive(item.href) ? "border-b-[#800000] text-[#800000] font-semibold" : "border-b-transparent"
 							)}>
 							{item.name}
+							{item.name === "Approvals" && pendingCount > 0 && (
+								<span className='ml-1.5 font-bold text-red-600'>({pendingCount})</span>
+							)}
 						</Link>
 					))}
 				</div>
