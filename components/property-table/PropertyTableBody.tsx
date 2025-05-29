@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dialog";
 import { Property, User } from "@/types";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import { Check, ChevronsUpDown, LoaderCircle, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -204,18 +203,7 @@ export default function PropertyTableBody({
 								p.serialNo
 							)}
 						</TableCell>
-						<TableCell className='p-0 py-2'>
-							<div className='relative w-20 h-20'>
-								{p.qrCode && (
-									<Image
-										src={p.qrCode}
-										alt='QR'
-										fill
-										className={cn("object-contain transition-opacity duration-200 ease-out", editMode[p.id] && " opacity-40")}
-									/>
-								)}
-							</div>
-						</TableCell>
+
 						<TableCell>
 							{userRole != "staff" && (
 								<div className='max-w-[300px]'>
