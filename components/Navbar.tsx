@@ -40,13 +40,14 @@ const Navbar = () => {
 		if (user?.role === "master_admin" && token) {
 			const fetchCount = async () => {
 				try {
-					const pendingRequests = await apiFetch<PendingReassignmentRequest[]>(
+					const pendingRequests = await apiFetch<{ data: PendingReassignmentRequest[] }>(
 						"/properties/reassignments/pending",
 						"GET",
 						undefined,
 						token ?? ""
 					);
-					setPendingCount(pendingRequests.length);
+
+					setPendingCount(pendingRequests.data.length);
 				} catch (error) {
 					console.error("Failed to fetch pending reassignments count:", error);
 					setPendingCount(0);
@@ -62,7 +63,6 @@ const Navbar = () => {
 	}, [user]);
 
 	const isActive = (href: string) => {
-		console.log(href, pathName, pathName === href);
 		return pathName.startsWith(href);
 	};
 

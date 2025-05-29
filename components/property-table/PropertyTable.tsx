@@ -54,7 +54,6 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		const isReassigning = !!property?.assignedTo;
 		const currentlyAssignedUser = users.find((u) => u.name === property?.assignedTo);
 
-		// This dialog logic remains the same
 		if (isReassigning && !overrideConfirm) {
 			if (userId !== String(currentlyAssignedUser?.id)) {
 				setPendingReassign({ propertyId, newUserId: userId });
@@ -67,7 +66,6 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 		const toastId = toast.loading(`${isReassigning ? "Submitting request" : "Assigning property"}...`);
 		try {
-			// Capture both data and status from the API call
 			const { data, status } = await apiFetchWithStatus<{ message?: string }>(
 				"/properties/assign",
 				"POST",
@@ -75,29 +73,22 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				token ?? ""
 			);
 
-			// --- NEW LOGIC TO HANDLE DIFFERENT SUCCESS CODES ---
-
-			if (status === 201 || 200) {
-				// First-time assignment was successful and INSTANT
+			if (status === 201 || status === 200) {
 				toast.success("Property assigned successfully!", { id: toastId });
-				await fetchProperties(); // Refresh the list to show the new assignment
+				await fetchProperties();
 			} else if (status === 202) {
-				// Re-assignment request was ACCEPTED and is PENDING
-				// Use the specific message from the backend
 				toast.success(data.message || "Request submitted for approval!", { id: toastId });
-				// DO NOT refresh the properties list, as nothing has changed yet
 			}
 
-			// Reset UI state for both scenarios
 			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
 			setPendingReassign(null);
 		} catch (err) {
 			console.error("Assign error:", err);
-			// Display the error message from the backend if it exists
 			const errorMessage = (err as ApiError).message || "Failed to complete the assignment request.";
 			toast.error(errorMessage, { id: toastId });
 		}
 	};
+
 	const handleSaveEdit = async (propertyId: number) => {
 		const values = editValues[propertyId];
 		if (!values?.propertyNo || !values?.description || !values?.quantity || !values?.serialNo || !values?.value) return;
