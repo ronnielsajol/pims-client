@@ -3,8 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { TableBody, TableCell } from "@/components/ui/table";
 import {
 	Dialog,
-	DialogClose,
-	DialogTrigger,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
@@ -13,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Property, User } from "@/types";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, LoaderCircle, X } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
@@ -21,6 +19,7 @@ import { useEffect, Dispatch, SetStateAction, RefObject } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
+import PropertyTableActionsCell from "./PropertyTableActionsCell";
 
 export interface PropertyTableBodyProps {
 	properties: Property[];
@@ -203,7 +202,6 @@ export default function PropertyTableBody({
 								p.serialNo
 							)}
 						</TableCell>
-
 						<TableCell>
 							{userRole != "staff" && (
 								<div className='max-w-[300px]'>
@@ -306,160 +304,25 @@ export default function PropertyTableBody({
 										</Button>
 									)}
 								</div>
-							)}
+							)}{" "}
 						</TableCell>
-
-						{(userRole === "admin" || userRole === "master_admin") && (
-							<TableCell className='pr-4'>
-								<div className='h-full flex gap-2 items-center justify-end'>
-									{editMode[p.id] ? (
-										<>
-											<Button
-												variant='outline'
-												className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
-												onClick={() => handleSaveEdit(p.id)}>
-												Save
-											</Button>
-											<Button
-												variant='outline'
-												className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'
-												onClick={() => setEditMode((prev) => ({ ...prev, [p.id]: false }))}>
-												Cancel
-											</Button>
-										</>
-									) : (
-										<>
-											{assignMode[p.id] ? (
-												<>
-													<Button
-														className='border-green-200 bg-transparent text-green-500 hover:text-green-700 hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
-														onClick={() => handleAssign(p.id)}>
-														<Check strokeWidth={3} />
-													</Button>
-													<Button
-														className='border-red-200 bg-transparent text-red-500 hover:text-red-700 hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
-														onClick={() =>
-															setAssignMode((prev) => ({
-																...prev,
-																[p.id]: false,
-															}))
-														}>
-														<X strokeWidth={3} />
-													</Button>
-												</>
-											) : (
-												<>
-													{p.assignedTo && (
-														<Button
-															variant='outline'
-															onClick={() => {
-																setSelectedUser((prev) => ({
-																	...prev,
-																	[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-																}));
-																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-															}}
-															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-															Reassign
-														</Button>
-													)}
-													<Button
-														variant='outline'
-														onClick={() => {
-															setEditValues((prev) => ({
-																...prev,
-																[p.id]: {
-																	propertyNo: p.propertyNo,
-																	description: p.description,
-																	quantity: p.quantity,
-																	value: p.value,
-																	serialNo: p.serialNo,
-																},
-															}));
-															setEditMode((prev) => ({ ...prev, [p.id]: true }));
-														}}
-														className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
-														Edit
-													</Button>
-													<Dialog>
-														<DialogTrigger asChild>
-															<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
-																Delete
-															</Button>
-														</DialogTrigger>
-														<DialogContent className='xl:max-w-md'>
-															<DialogHeader>
-																<DialogTitle>Are you sure?</DialogTitle>
-																<DialogDescription>
-																	{p?.assignedTo
-																		? "This property is currently assigned. Do you still want to delete it?"
-																		: "Do you want to delete this property?"}
-																</DialogDescription>
-															</DialogHeader>
-															<DialogFooter>
-																<DialogClose asChild>
-																	<Button variant='outline' className='cursor-pointer'>
-																		Cancel
-																	</Button>
-																</DialogClose>
-																<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
-																	{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
-																</Button>
-															</DialogFooter>
-														</DialogContent>
-													</Dialog>
-												</>
-											)}
-										</>
-									)}
-								</div>
-							</TableCell>
-						)}
-						{userRole === "property_custodian" && (
-							<TableCell className='pr-4'>
-								<div className='h-full flex gap-2 items-center justify-end'>
-									{assignMode[p.id] ? (
-										// Render confirmation and cancel buttons when in assign mode
-										<>
-											<Button
-												className='border-green-200 bg-transparent text-green-500 hover:text-green-700 hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
-												onClick={() => handleAssign(p.id)}>
-												<Check strokeWidth={3} />
-											</Button>
-											<Button
-												className='border-red-200 bg-transparent text-red-500 hover:text-red-700 hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
-												onClick={() =>
-													setAssignMode((prev) => ({
-														...prev,
-														[p.id]: false,
-													}))
-												}>
-												<X strokeWidth={3} />
-											</Button>
-										</>
-									) : (
-										// Render the "Reassign" button only if the property has an assignee
-										<>
-											{p.assignedTo && (
-												<Button
-													variant='outline'
-													onClick={() => {
-														setSelectedUser((prev) => ({
-															...prev,
-															[p.id]: String(users.find((u) => u.name === p.assignedTo)?.id ?? ""),
-														}));
-														setAssignMode((prev) => ({ ...prev, [p.id]: true }));
-													}}
-													className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
-													disabled={p.reassignmentStatus === "pending"}>
-													Reassign
-												</Button>
-											)}
-										</>
-									)}
-								</div>
-							</TableCell>
-						)}
+						<PropertyTableActionsCell
+							property={p}
+							users={users}
+							userRole={userRole}
+							deleteLoading={deleteLoading}
+							editMode={editMode}
+							setEditMode={setEditMode}
+							editValues={editValues}
+							setEditValues={setEditValues}
+							assignMode={assignMode}
+							setAssignMode={setAssignMode}
+							selectedUser={selectedUser}
+							setSelectedUser={setSelectedUser}
+							handleSaveEdit={handleSaveEdit}
+							handleDelete={handleDelete}
+							handleAssign={handleAssign}
+						/>
 					</motion.tr>
 				))}
 				{addMode && (
