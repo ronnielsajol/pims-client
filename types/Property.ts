@@ -10,5 +10,6 @@ export interface Property {
 	updatedAt?: string;
 	assignedTo?: string;
 	isNew?: boolean;
+	assignedDepartment?: string;
 	reassignmentStatus?: "pending" | null;
 }
