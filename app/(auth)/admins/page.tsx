@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AnimatePresence, motion } from "motion/react";
 
 const AdminsPage = () => {
 	const { token, user } = useAuth();
@@ -49,14 +50,22 @@ const AdminsPage = () => {
 								<TableHead className=' text-muted-foreground'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody className=''>
-							{users.map((u) => (
-								<TableRow className='hover:bg-muted/50' key={u.id}>
-									<TableCell className='font-medium pl-4'>{u.id}</TableCell>
-									<TableCell className='font-medium'>{u.name}</TableCell>
-									<TableCell className=''>{u.email}</TableCell>
-								</TableRow>
-							))}
+						<TableBody>
+							<AnimatePresence>
+								{users.map((u) => (
+									<motion.tr
+										className='hover:bg-muted/50'
+										key={u.id}
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										transition={{ duration: 0.3 }}>
+										<TableCell className='font-medium '>{u.id}</TableCell>
+										<TableCell className='font-medium'>{u.name}</TableCell>
+										<TableCell className=''>{u.email}</TableCell>
+									</motion.tr>
+								))}
+							</AnimatePresence>
 						</TableBody>
 					</Table>
 				</div>

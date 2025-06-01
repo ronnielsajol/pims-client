@@ -359,8 +359,7 @@ export default function PropertyTableBody({
 																}));
 																setAssignMode((prev) => ({ ...prev, [p.id]: true }));
 															}}
-															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
-															disabled={p.reassignmentStatus === "pending"}>
+															className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
 															Reassign
 														</Button>
 													)}
@@ -451,7 +450,8 @@ export default function PropertyTableBody({
 														}));
 														setAssignMode((prev) => ({ ...prev, [p.id]: true }));
 													}}
-													className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+													className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
+													disabled={p.reassignmentStatus === "pending"}>
 													Reassign
 												</Button>
 											)}

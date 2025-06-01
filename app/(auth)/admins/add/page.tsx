@@ -42,7 +42,7 @@ export default function AddAdminPage() {
 	};
 
 	if (user?.role === "staff") {
-		return <div className='p-8'>You are not authorized to add properties.</div>;
+		return <div className='p-8'>You are not authorized to add admins.</div>;
 	}
 
 	return (

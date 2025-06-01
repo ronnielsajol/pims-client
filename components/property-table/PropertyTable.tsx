@@ -82,6 +82,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
 			setPendingReassign(null);
+			fetchProperties();
 		} catch (err) {
 			console.error("Assign error:", err);
 			const errorMessage = (err as ApiError).message || "Failed to complete the assignment request.";

@@ -26,12 +26,10 @@ export default function ApprovalsPage() {
 	// State to hold the list of pending requests
 	const [requests, setRequests] = useState<ReassignmentRequest[]>([]);
 	// State for loading and error handling
-	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	// Function to fetch pending requests from the backend
 	const fetchPendingRequests = async () => {
-		setIsLoading(true);
 		try {
 			// We don't need the status here, so the original apiFetch is fine
 			const pendingRequests = await apiFetch<{ data: ReassignmentRequest[] }>(
@@ -44,8 +42,6 @@ export default function ApprovalsPage() {
 		} catch (err) {
 			setError("Failed to fetch pending requests. Please try again later.");
 			console.error(err);
-		} finally {
-			setIsLoading(false);
 		}
 	};
 
@@ -70,15 +66,6 @@ export default function ApprovalsPage() {
 			toast.error(errorMessage, { id: toastId });
 		}
 	};
-
-	// Render a loading state
-	if (isLoading) {
-		return (
-			<div className='flex items-center justify-center h-64'>
-				<p>Loading pending approvals...</p>
-			</div>
-		);
-	}
 
 	// Render an error state
 	if (error) {
