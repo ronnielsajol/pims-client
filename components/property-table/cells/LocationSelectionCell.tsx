@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
