@@ -4,23 +4,32 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ApiError } from "@/types";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Building2, User } from "lucide-react";
+import Link from "next/link";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
-export default function AddPropertyPage() {
+export default function AddStaffPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const { token, user } = useAuth();
+	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		const toastId = toast.loading("Creating account...");
+		setLoading(true);
+
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password }, token ?? "");
-			alert("Account created!");
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "staff" }, token ?? "");
+			toast.success("Account creation successful!", { id: toastId });
+
 			setName("");
 			setEmail("");
 			setPassword("");
@@ -33,47 +42,89 @@ export default function AddPropertyPage() {
 	};
 
 	if (user?.role === "staff") {
-		return <div className='p-8'>You are not authorized to add properties.</div>;
+		return <div className='p-8'>You are not authorized to add users.</div>;
 	}
 
 	return (
 		<ProtectedRoute>
-			<div className='p-8 w-10/12 mx-auto flex flex-col justify-start items-center'>
-				<div className='flex gap-2 items-center mb-4'>
-					<Button variant={"ghost"} onClick={() => router.push("/users")} className='h-min w-min cursor-pointer p-0'>
-						<ArrowLeft strokeWidth={3} className='text-gray-500' />
-					</Button>
-					<h2 className='text-2xl font-bold'>Create new user account</h2>
-				</div>
-				<form onSubmit={handleSubmit} className='space-y-4 max-w-[75%] w-full'>
-					<Input
-						type='text'
-						placeholder='Name'
-						className='w-full p-2 border rounded'
-						value={name}
-						onChange={(e) => setName(e.target.value)}
-						required
-					/>
-					<Input
-						type='email'
-						placeholder='Email'
-						className='w-full p-2 border rounded'
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
-						required
-					/>
-					<Input
-						type='password'
-						placeholder='Password'
-						className='w-full p-2 border rounded text-[#800000]'
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
-						required
-					/>
-					<Button className='bg-green-600 hover:bg-green-500  text-white px-4 py-2 text-lg rounded w-full cursor-pointer max-w-min'>
-						Create User
-					</Button>
-				</form>
+			<div className='relative p-8 w-10/12 mx-auto flex flex-col justify-start items-center'>
+				<div className='container max-w-3xl py-10'>
+					<Link
+						href='/users'
+						className='inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6'>
+						<ArrowLeft className='mr-2 h-4 w-4' />
+						Back to Staffs
+					</Link>
+
+					<form onSubmit={handleSubmit}>
+						<Card>
+							<CardHeader className='space-y-1'>
+								<div className='flex items-center gap-2'>
+									<Building2 className='h-5 w-5 text-primary' />
+									<CardTitle className='text-2xl'>Create New Staff</CardTitle>
+								</div>
+								<CardDescription>Enter the details below to create a new admin account</CardDescription>
+							</CardHeader>
+							<CardContent className='space-y-4'>
+								<div className='space-y-2'>
+									<Label htmlFor='name'>Full Name</Label>
+									<Input
+										value={name}
+										required
+										id='name'
+										placeholder="Enter staff's full name"
+										autoComplete='name'
+										onChange={(e) => {
+											setName(e.target.value);
+										}}
+									/>
+								</div>
+								<div className='space-y-2'>
+									<Label htmlFor='email'>Email Address</Label>
+									<Input
+										value={email}
+										required
+										id='email'
+										type='email'
+										placeholder='email@example.com'
+										autoComplete='email'
+										onChange={(e) => {
+											setEmail(e.target.value);
+										}}
+									/>
+								</div>
+								<div className='space-y-2'>
+									<div className='flex items-center justify-between'>
+										<Label htmlFor='password'>Password</Label>
+									</div>
+									<Input
+										value={password}
+										required
+										id='password'
+										type='password'
+										placeholder='Create a secure password'
+										autoComplete='new-password'
+										onChange={(e) => {
+											setPassword(e.target.value);
+										}}
+									/>
+									<p className='text-xs text-muted-foreground'>
+										Password must be at least 8 characters long with a mix of letters, numbers, and symbols
+									</p>
+								</div>
+							</CardContent>
+							<CardFooter className='flex justify-between border-t pt-6'>
+								<Button variant='outline' type='button' onClick={() => router.push("/admins")}>
+									Cancel
+								</Button>
+								<Button type='submit' className='gap-2 cursor-pointer bg-green-500 hover:bg-green-600' disabled={loading}>
+									<User className='h-4 w-4' />
+									Create Account
+								</Button>
+							</CardFooter>
+						</Card>
+					</form>
+				</div>{" "}
 			</div>
 		</ProtectedRoute>
 	);

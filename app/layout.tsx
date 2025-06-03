@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import { PendingApprovalsProvider } from "@/context/PendingApprovalsCount";
 
 export const metadata: Metadata = {
 	title: "PIMS",
@@ -17,8 +18,10 @@ export default function RootLayout({
 		<html lang='en'>
 			<body className={`antialiased`}>
 				<AuthProvider>
-					{children}
-					<Toaster richColors />
+					<PendingApprovalsProvider>
+						{children}
+						<Toaster richColors />
+					</PendingApprovalsProvider>
 				</AuthProvider>
 			</body>
 		</html>

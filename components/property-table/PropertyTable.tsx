@@ -1,7 +1,7 @@
 "use client";
 import { Table } from "@/components/ui/table";
 import { ApiError, Property, User } from "@/types";
-import { useRef, useState, Dispatch, SetStateAction } from "react";
+import { useRef, useState, Dispatch, SetStateAction, useMemo } from "react";
 import { toast } from "sonner";
 import { apiFetch, apiFetchWithStatus } from "@/lib/api";
 import PropertyTableHeader from "./PropertyTableHeader";
@@ -82,6 +82,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
 			setPendingReassign(null);
+			fetchProperties();
 		} catch (err) {
 			console.error("Assign error:", err);
 			const errorMessage = (err as ApiError).message || "Failed to complete the assignment request.";
@@ -135,6 +136,30 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		}
 	};
 
+	const handleLocationUpdate = async (propertyId: number, newLocation: string) => {
+		const toastId = toast.loading("Updating location...");
+		try {
+			await apiFetch(
+				`/properties/${propertyId}/location-detail`,
+				"PATCH",
+				{ property: { location_detail: newLocation } }, // Ensure backend handles this field
+				token ?? ""
+			);
+			toast.success("Location updated!", { id: toastId });
+			await fetchProperties(); // Refresh data
+		} catch (err) {
+			const error = err as ApiError; //
+			toast.error(error.message || "Failed to update location.", { id: toastId });
+			console.error("Location update error:", error);
+		}
+	};
+
+	const allAvailableLocations = useMemo(() => {
+		const locations = properties
+			.map((p) => p.location_detail)
+			.filter((loc): loc is string => typeof loc === "string" && loc.trim() !== ""); // Filter out empty or undefined
+		return [...new Set(locations)].sort(); // Unique and sorted
+	}, [properties]);
 	return (
 		<Table className='overflow-hidden '>
 			<PropertyTableHeader userRole={userRole} />
@@ -169,6 +194,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				handleSaveEdit={handleSaveEdit}
 				handleDelete={handleDelete}
 				addRowRef={addRowRef}
+				allAvailableLocations={allAvailableLocations}
+				handleLocationUpdate={handleLocationUpdate}
 			/>
 		</Table>
 	);
