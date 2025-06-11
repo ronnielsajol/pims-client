@@ -9,6 +9,7 @@ export interface Property {
 	createdAt?: string;
 	updatedAt?: string;
 	assignedTo?: string;
-	isNew?: boolean;
+	location_detail?: string;
+	assignedDepartment?: string;
 	reassignmentStatus?: "pending" | null;
 }

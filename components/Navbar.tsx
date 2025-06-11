@@ -2,7 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -17,8 +17,7 @@ import {
 } from "./ui/dropdown-menu";
 import { ChevronDown, LogOut, Menu, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
-import { apiFetch } from "@/lib/api";
-import { PendingReassignmentRequest } from "@/types/PendingReassignment";
+import { usePendingApprovals } from "@/context/PendingApprovalsCount";
 
 const allNavItems = [
 	{ name: "Home", href: "/dashboard" },
@@ -30,37 +29,11 @@ const allNavItems = [
 ];
 
 const Navbar = () => {
-	const { user, token, logout } = useAuth();
+	const { user, logout } = useAuth();
 	const pathName = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
-	const [pendingCount, setPendingCount] = useState(0);
-
-	useEffect(() => {
-		if (user?.role === "master_admin" && token) {
-			const fetchCount = async () => {
-				try {
-					const pendingRequests = await apiFetch<{ data: PendingReassignmentRequest[] }>(
-						"/properties/reassignments/pending",
-						"GET",
-						undefined,
-						token ?? ""
-					);
-
-					setPendingCount(pendingRequests.data.length);
-				} catch (error) {
-					console.error("Failed to fetch pending reassignments count:", error);
-					setPendingCount(0);
-				}
-			};
-
-			fetchCount();
-
-			// Optional: Add polling to refetch every 2 minutes
-			const interval = setInterval(fetchCount, 120000);
-			return () => clearInterval(interval); // Cleanup on component unmount
-		}
-	}, [user]);
+	const { pendingCount } = usePendingApprovals();
 
 	const isActive = (href: string) => {
 		return pathName.startsWith(href);

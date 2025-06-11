@@ -43,14 +43,14 @@ const PropertyCustodiansPage = () => {
 				<div className='rounded border shadow-md'>
 					<Table>
 						<TableHeader>
-							<TableRow className='bg-muted/50 '>
-								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Name</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Email</TableHead>
-								<TableHead className='w-3/12 text-muted-foreground'>Actions</TableHead>
+							<TableRow className='bg-muted/50'>
+								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
+								<TableHead className=' text-muted-foreground'>Name</TableHead>
+								<TableHead className=' text-muted-foreground'>Email</TableHead>
+								<TableHead className=' text-muted-foreground'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
-						<TableBody className=''>
+						<TableBody>
 							<AnimatePresence>
 								{users.map((u) => (
 									<motion.tr
@@ -60,7 +60,7 @@ const PropertyCustodiansPage = () => {
 										animate={{ opacity: 1 }}
 										exit={{ opacity: 0 }}
 										transition={{ duration: 0.3 }}>
-										<TableCell className='font-medium pl-4'>{u.id}</TableCell>
+										<TableCell className='font-medium '>{u.id}</TableCell>
 										<TableCell className='font-medium'>{u.name}</TableCell>
 										<TableCell className=''>{u.email}</TableCell>
 									</motion.tr>
