@@ -55,6 +55,8 @@ export default function UserSelectionCell({
 }: UserSelectionCellProps) {
 	const p = property;
 
+	const userLabel = userRole === "master_admin" || userRole === "admin" ? "Custodian" : "Staff";
+
 	return (
 		<div className='max-w-[300px]'>
 			{isAssignMode ? (
@@ -65,14 +67,14 @@ export default function UserSelectionCell({
 								variant={"outline"}
 								role='combobox'
 								className={cn("w-[180px] justify-between", !selectedUserIdInPopover && "text-gray-500")}>
-								{selectedUserIdInPopover ? users.find((u) => u.id === Number(selectedUserIdInPopover))?.name : "Select Staff"}
+								{selectedUserIdInPopover ? users.find((u) => u.id === Number(selectedUserIdInPopover))?.name : `Select ${userLabel}`}
 								<ChevronsUpDown className='opacity-50' />
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent className='w-[180px] p-0'>
 							<Command>
-								<CommandInput placeholder='Search for staff...' />
-								<CommandEmpty>No staff found.</CommandEmpty>
+								<CommandInput placeholder={`Search for a ${userLabel}...`} />
+								<CommandEmpty>No {userLabel} found.</CommandEmpty>
 								<CommandGroup>
 									{users.map((u) => (
 										<CommandItem

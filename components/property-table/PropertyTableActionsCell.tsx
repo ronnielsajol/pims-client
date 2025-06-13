@@ -1,7 +1,7 @@
 "use client";
 import { TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { Check, LoaderCircle, MoreHorizontal, X } from "lucide-react";
 import {
 	Dialog,
 	DialogClose,
@@ -12,8 +12,17 @@ import {
 	DialogDescription,
 	DialogFooter,
 } from "@/components/ui/dialog";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Property, User } from "@/types";
 import { Dispatch, SetStateAction } from "react";
+import { useRouter } from "next/navigation";
 
 interface PropertyTableActionsCellProps {
 	property: Property;
@@ -63,6 +72,7 @@ export default function PropertyTableActionsCell({
 	handleAssign,
 }: PropertyTableActionsCellProps) {
 	const p = property;
+	const router = useRouter();
 
 	// Don't render actions cell for staff users
 	if (userRole === "staff") {
@@ -167,6 +177,25 @@ export default function PropertyTableActionsCell({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant='ghost' size='icon' className='h-8 w-8'>
+						<MoreHorizontal className='h-4 w-4' />
+						<span className='sr-only'>More</span>
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='end'>
+					<DropdownMenuLabel>Actions</DropdownMenuLabel>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem
+						onClick={() => {
+							router.push(`/properties/${p.id}/details`);
+						}}>
+						View details
+					</DropdownMenuItem>
+					<DropdownMenuItem>Print QR code</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
 		</>
 	);
 
