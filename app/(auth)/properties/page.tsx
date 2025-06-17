@@ -63,7 +63,7 @@ export default function PropertiesPage() {
 	};
 	return (
 		<ProtectedRoute>
-			<div className='p-8 w-full'>
+			<div className='max-xl:p-1 laptop:p-5 desktop:p-8 w-full'>
 				<div className={cn("flex w-full", user?.role === "staff" ? "justify-start" : "justify-between")}>
 					<h2 className='text-2xl font-bold mb-4'>All Properties</h2>
 					{(user?.role === "admin" || user?.role === "master_admin") && (

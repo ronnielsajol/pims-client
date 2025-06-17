@@ -27,7 +27,7 @@ const UsersPage = () => {
 
 	return (
 		<ProtectedRoute>
-			<div className='p-8 w-full'>
+			<div className='max-xl:p-1 laptop:p-5 desktop:p-8 w-full'>
 				<div className='flex justify-between w-full'>
 					<h2 className='text-2xl font-bold mb-4'>All Staff</h2>
 					<Button

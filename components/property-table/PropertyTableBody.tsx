@@ -137,7 +137,6 @@ export default function PropertyTableBody({
 			placeholder: field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, " $1"),
 		};
 	};
-	console.log("Rendering PropertyTableBody with properties:", properties);
 	return (
 		<TableBody className='transition-[height] duration-700 ease-out'>
 			<AnimatePresence>

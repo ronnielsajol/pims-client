@@ -100,12 +100,14 @@ export default function PropertyTableActionsCell({
 	const renderAssignModeActions = () => (
 		<>
 			<Button
-				className='border-green-200 bg-transparent text-green-500 hover:text-green-700 hover:bg-green-100 border-2 cursor-pointer transition-colors duration-200 ease-out'
+				variant={"outline"}
+				className='border-green-200 text-green-500 hover:text-green-700 hover:bg-green-100 cursor-pointer transition-colors duration-200 ease-out'
 				onClick={() => handleAssign(p.id)}>
 				<Check strokeWidth={3} />
 			</Button>
 			<Button
-				className='border-red-200 bg-transparent text-red-500 hover:text-red-700 hover:bg-red-100 border-2 cursor-pointer transition-colors duration-300 ease-out'
+				variant={"outline"}
+				className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-100 cursor-pointer transition-colors duration-200 ease-out'
 				onClick={() =>
 					setAssignMode((prev) => ({
 						...prev,
@@ -246,8 +248,8 @@ export default function PropertyTableActionsCell({
 	};
 
 	return (
-		<TableCell className='pr-4'>
-			<div className='h-full flex gap-2 items-center justify-end'>{renderActions()}</div>
+		<TableCell className='pr-4 max-desktop:pr-2'>
+			<div className='h-full flex gap-2 items-center justify-end '>{renderActions()}</div>
 		</TableCell>
 	);
 }
