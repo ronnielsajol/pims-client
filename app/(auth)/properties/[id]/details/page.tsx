@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import EditableDetailSelect from "@/components/EditableDetailSelect";
 
 interface EditableDetailItemProps {
 	label: string;
@@ -119,6 +120,8 @@ export default function Page() {
 	const [isEditing, setIsEditing] = useState(false);
 	const [editValues, setEditValues] = useState<PropertyWithDetails | null>(null);
 
+	const categoryOptions = ["Annex A", "Annex B", "Annex C"] as const;
+
 	const fetchProperties = async () => {
 		if (!token || !id) return;
 		setIsLoading(true);
@@ -170,8 +173,6 @@ export default function Page() {
 		if (!editValues) return;
 		const toastId = toast.loading("Saving changes...");
 		try {
-			// The data is split across two tables, so we need two API calls.
-			// We can run them in parallel.
 			const corePropertyPayload = {
 				propertyNo: editValues.propertyNo,
 				description: editValues.description,
@@ -179,6 +180,7 @@ export default function Page() {
 				value: editValues.value,
 				serialNo: editValues.serialNo,
 				location_detail: editValues.location_detail,
+				category: editValues.category,
 			};
 
 			const detailsPayload = {
@@ -237,11 +239,14 @@ export default function Page() {
 					<div className='flex items-center gap-2'>
 						{isEditing ? (
 							<>
-								<Button variant='outline' size='sm' onClick={handleCancelClick}>
+								<Button variant='outline' className='cursor-pointer' onClick={handleCancelClick}>
 									<X className='h-4 w-4 mr-2' />
 									Cancel
 								</Button>
-								<Button size='sm' onClick={handleSaveClick}>
+								<Button
+									variant={"outline"}
+									className='border-green-200 text-green-500 hover:text-green-700 hover:bg-green-100 cursor-pointer transition-colors duration-200 ease-out'
+									onClick={handleSaveClick}>
 									<Save className='h-4 w-4 mr-2' />
 									Save
 								</Button>
@@ -278,12 +283,15 @@ export default function Page() {
 						</CardHeader>
 						<CardContent>
 							<div className='grid grid-cols-1 gap-1'>
-								<EditableDetailItem
+								<EditableDetailSelect
 									label='Category'
 									value={displayData?.category}
-									isEditing={false}
-									onChange={(val) => handleInputChange("propertyNo", val, false)}
+									isEditing={isEditing}
+									onChange={(val) => handleInputChange("category", val, false)}
+									options={categoryOptions}
+									placeholder='Select a Category'
 								/>
+
 								<EditableDetailItem
 									label='Product Number'
 									value={displayData?.propertyNo}
@@ -313,6 +321,12 @@ export default function Page() {
 									value={displayData?.serialNo}
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("serialNo", val, false)}
+								/>
+								<EditableDetailItem
+									label='Duration'
+									value={displayData?.details?.duration}
+									isEditing={isEditing}
+									onChange={(val) => handleInputChange("duration", val, false)}
 								/>
 								<EditableDetailItem
 									label='Quantity'

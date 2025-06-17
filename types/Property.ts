@@ -30,6 +30,7 @@ export interface PropertyDetails {
 	poNo: string | null;
 	invoiceDate: string | null;
 	invoiceNo: string | null;
+	duration: string | null;
 }
 
 export interface PropertyWithDetails extends Property {
