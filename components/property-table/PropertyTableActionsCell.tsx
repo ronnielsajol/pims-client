@@ -5,7 +5,6 @@ import { Check, LoaderCircle, MoreHorizontal, X } from "lucide-react";
 import {
 	Dialog,
 	DialogClose,
-	DialogTrigger,
 	DialogContent,
 	DialogHeader,
 	DialogTitle,
@@ -21,7 +20,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Property, User } from "@/types";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface PropertyTableActionsCellProps {
@@ -73,6 +72,8 @@ export default function PropertyTableActionsCell({
 }: PropertyTableActionsCellProps) {
 	const p = property;
 	const router = useRouter();
+
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 	// Don't render actions cell for staff users
 	if (userRole === "staff") {
@@ -150,12 +151,36 @@ export default function PropertyTableActionsCell({
 				className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
 				Edit
 			</Button>
-			<Dialog>
-				<DialogTrigger asChild>
-					<Button variant='outline' className='border-red-200 text-red-500 hover:text-red-700 hover:bg-red-50 cursor-pointer'>
-						Delete
+			<Button
+				variant='outline'
+				className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
+				onClick={() => {
+					router.push(`/properties/${p.id}/details`);
+				}}>
+				View Details
+			</Button>
+
+			<DropdownMenu modal={false}>
+				<DropdownMenuTrigger asChild>
+					<Button variant='ghost' size='icon' className='h-8 w-8'>
+						<MoreHorizontal className='h-4 w-4' />
+						<span className='sr-only'>More</span>
 					</Button>
-				</DialogTrigger>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='end'>
+					<DropdownMenuLabel>Actions</DropdownMenuLabel>
+					<DropdownMenuSeparator />
+					<DropdownMenuItem
+						onClick={() => setIsDeleteDialogOpen(true)}
+						onSelect={(e) => e.preventDefault()}
+						className='text-red-500 hover:text-red-500! hover:bg-red-50 '>
+						{" "}
+						Delete
+					</DropdownMenuItem>
+					<DropdownMenuItem>Print QR code</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
 				<DialogContent className='xl:max-w-md'>
 					<DialogHeader>
 						<DialogTitle>Are you sure?</DialogTitle>
@@ -177,25 +202,6 @@ export default function PropertyTableActionsCell({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant='ghost' size='icon' className='h-8 w-8'>
-						<MoreHorizontal className='h-4 w-4' />
-						<span className='sr-only'>More</span>
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='end'>
-					<DropdownMenuLabel>Actions</DropdownMenuLabel>
-					<DropdownMenuSeparator />
-					<DropdownMenuItem
-						onClick={() => {
-							router.push(`/properties/${p.id}/details`);
-						}}>
-						View details
-					</DropdownMenuItem>
-					<DropdownMenuItem>Print QR code</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
 		</>
 	);
 
