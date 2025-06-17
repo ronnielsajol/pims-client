@@ -6,12 +6,14 @@ export interface Property {
 	value: string;
 	serialNo: string;
 	qrCode?: string;
+	category: "Annex A" | "Annex B" | "Annex C";
 	createdAt?: string;
 	updatedAt?: string;
 	assignedTo?: string;
 	location_detail?: string;
 	assignedDepartment?: string;
 	reassignmentStatus?: "pending" | null;
+	totalValue: number;
 }
 
 export interface PropertyDetails {

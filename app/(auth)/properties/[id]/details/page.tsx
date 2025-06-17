@@ -28,6 +28,7 @@ interface EditableDetailItemProps {
 	onChange: (value: string) => void;
 	inputType?: React.HTMLInputTypeAttribute; // e.g., 'text', 'date', 'number'
 	fallbackText?: string;
+	isLast?: boolean;
 }
 
 const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
@@ -37,6 +38,7 @@ const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
 	onChange,
 	inputType = "text",
 	fallbackText = "Not Set",
+	isLast = false,
 }) => (
 	<>
 		<div className='grid grid-cols-3 items-center min-h-[44px]'>
@@ -49,7 +51,7 @@ const EditableDetailItem: React.FC<EditableDetailItemProps> = ({
 				)}
 			</div>
 		</div>
-		<Separator />
+		{!isLast && <Separator />}
 	</>
 );
 
@@ -277,6 +279,12 @@ export default function Page() {
 						<CardContent>
 							<div className='grid grid-cols-1 gap-1'>
 								<EditableDetailItem
+									label='Category'
+									value={displayData?.category}
+									isEditing={false}
+									onChange={(val) => handleInputChange("propertyNo", val, false)}
+								/>
+								<EditableDetailItem
 									label='Product Number'
 									value={displayData?.propertyNo}
 									isEditing={isEditing}
@@ -321,10 +329,18 @@ export default function Page() {
 								/>
 								<EditableDetailItem
 									label='Value'
-									value={displayData?.value}
+									value={isEditing ? displayData?.value : displayData?.value ? `₱ ${Number(displayData.value).toLocaleString()}` : null}
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("value", val, false)}
 									inputType='number'
+								/>
+								<EditableDetailItem
+									label='Total'
+									value={displayData?.totalValue ? `₱ ${displayData.totalValue.toLocaleString()}` : null}
+									isEditing={false}
+									onChange={(val) => handleInputChange("value", val, false)}
+									inputType='number'
+									isLast
 								/>
 							</div>
 						</CardContent>
@@ -362,6 +378,7 @@ export default function Page() {
 									value={displayData?.details?.remarks}
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("remarks", val, true)}
+									isLast
 								/>
 							</div>
 						</CardContent>
@@ -391,6 +408,7 @@ export default function Page() {
 									value={displayData?.details?.fundCluster}
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("fundCluster", val, true)}
+									isLast
 								/>
 							</div>
 						</CardContent>
@@ -420,6 +438,7 @@ export default function Page() {
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("invoiceDate", val, true)}
 									inputType='date'
+									isLast
 								/>
 							</div>
 						</CardContent>

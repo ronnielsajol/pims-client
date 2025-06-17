@@ -66,12 +66,15 @@ export default function UserSelectionCell({
 							<Button
 								variant={"outline"}
 								role='combobox'
-								className={cn("w-[180px] justify-between", !selectedUserIdInPopover && "text-gray-500")}>
+								className={cn(
+									"laptop:text-xs laptop:w-[140px] desktop:w-[180px] justify-between ",
+									!selectedUserIdInPopover && "text-gray-500"
+								)}>
 								{selectedUserIdInPopover ? users.find((u) => u.id === Number(selectedUserIdInPopover))?.name : `Select ${userLabel}`}
 								<ChevronsUpDown className='opacity-50' />
 							</Button>
 						</PopoverTrigger>
-						<PopoverContent className='w-[180px] p-0'>
+						<PopoverContent className='laptop:w-[140px] desktop:w-[180px] p-0'>
 							<Command>
 								<CommandInput placeholder={`Search for a ${userLabel}...`} />
 								<CommandEmpty>No {userLabel} found.</CommandEmpty>
@@ -84,7 +87,7 @@ export default function UserSelectionCell({
 												onSelectUserInPopover(String(u.id));
 												onUserSelectPopoverOpenChange(false); // Close popover on select
 											}}
-											className='cursor-pointer'>
+											className='cursor-pointer laptop:text-xs'>
 											{u.name}
 											<Check
 												className={cn("ml-auto text-[#800000]", selectedUserIdInPopover === String(u.id) ? "opacity-100" : "opacity-0")}

@@ -68,7 +68,7 @@ const columnDefinitions: ColumnDefinition[] = [
 	{
 		key: "actions",
 		label: "Actions",
-		className: "text-right pr-4 text-muted-foreground",
+		className: "text-right pr-4 text-muted-foreground ",
 		isVisible: (userRole) => userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian",
 	},
 ];
@@ -79,7 +79,7 @@ export default function PropertyTableHeader({ userRole }: { userRole?: string })
 
 	return (
 		<TableHeader>
-			<TableRow className='bg-muted/50'>
+			<TableRow className='bg-muted/50 '>
 				{visibleColumns.map((col) => (
 					<TableHead key={col.key} className={col.className}>
 						{col.label}
