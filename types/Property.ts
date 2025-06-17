@@ -13,3 +13,23 @@ export interface Property {
 	assignedDepartment?: string;
 	reassignmentStatus?: "pending" | null;
 }
+
+export interface PropertyDetails {
+	propertyId: number;
+	article: string | null;
+	oldPropertyNo: string | null;
+	unitOfMeasure: string | null;
+	acquisitionDate: string | null;
+	condition: string | null;
+	remarks: string | null;
+	pupBranch: string | null;
+	assetType: string | null;
+	fundCluster: string | null;
+	poNo: string | null;
+	invoiceDate: string | null;
+	invoiceNo: string | null;
+}
+
+export interface PropertyWithDetails extends Property {
+	details: PropertyDetails | null;
+}
