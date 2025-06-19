@@ -101,9 +101,14 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			toast.success("Property updated!", { id: toastId });
 			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
 			fetchProperties();
-		} catch (error) {
-			toast.error("Failed to update property.");
-			console.error(error);
+		} catch (err) {
+			const error = err as ApiError;
+
+			if (error.status === 409) {
+				toast.error(error.message || "This property number already exists.", { id: toastId });
+			} else {
+				toast.error(error.message || "Failed to update property.", { id: toastId });
+			}
 		}
 	};
 
@@ -129,8 +134,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			});
 			await fetchProperties();
 		} catch (err) {
-			console.error("Delete error:", err);
-			toast.error("Failed to delete property");
+			const error = err as ApiError;
+			toast.error(error.message || "Failed to delete property");
 		} finally {
 			setDeleteLoading(false);
 		}
