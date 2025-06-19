@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction, RefObject } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/lib/api";
+import { ApiError } from "@/types";
 
 interface PropertyTableAddRowProps {
 	addMode: boolean;
@@ -33,14 +34,21 @@ export default function PropertyTableAddRow({
 }: PropertyTableAddRowProps) {
 	const handleSaveNewProperty = async () => {
 		setAddLoading(true);
+		const toastId = toast.loading("Adding property...");
 		try {
 			await apiFetch("/properties/add", "POST", { property: newProperty }, token ?? "");
-			toast.success("Property added!");
+			toast.success("Property added successfully!", { id: toastId });
 			setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
 			setAddMode(false);
 			fetchProperties();
 		} catch (err) {
-			toast.error("Failed to add property");
+			const error = err as ApiError;
+
+			if (error.status === 409) {
+				toast.error(error.message || "This property number already exists.", { id: toastId });
+			} else {
+				toast.error(error.message || "Failed to add property.", { id: toastId });
+			}
 			console.error("Add error:", err);
 		} finally {
 			setAddLoading(false);
@@ -69,11 +77,12 @@ export default function PropertyTableAddRow({
 					value={newProperty.propertyNo}
 					onChange={(e) => setNewProperty((prev) => ({ ...prev, propertyNo: e.target.value }))}
 					className='p-2 h-8 border rounded w-full'
-					placeholder='Property name'
+					placeholder='Property number'
 				/>
 			</TableCell>
 			<TableCell>
-				<textarea
+				<input
+					type='text'
 					value={newProperty.description}
 					onChange={(e) => setNewProperty((prev) => ({ ...prev, description: e.target.value }))}
 					className='p-2 h-8 border rounded w-full'

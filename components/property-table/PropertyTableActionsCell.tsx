@@ -159,7 +159,7 @@ export default function PropertyTableActionsCell({
 				onClick={() => {
 					router.push(`/properties/${p.id}/details`);
 				}}>
-				View Details
+				Details
 			</Button>
 
 			<DropdownMenu modal={false}>
