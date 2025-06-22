@@ -224,15 +224,15 @@ export default function Page() {
 
 	return (
 		<ProtectedRoute>
-			<div className='py-12 px-24 w-full'>
+			<div className='py-12 px-2 desktop:px-24  w-full'>
 				{/* Header */}
-				<div className='flex items-center justify-between mb-6'>
-					<div className='flex items-center gap-4'>
+				<div className='flex items-center justify-between mb-6 max-xl:flex-col max-xl:items-start max-xl:gap-4 max-xl:mb-2'>
+					<div className='flex items-center gap-4 max-xl:w-full'>
 						<Button variant='outline' size='icon' onClick={handleBack}>
 							<ArrowLeft className='h-4 w-4' />
 						</Button>
-						<h1 className='text-2xl font-bold'>Property Details</h1>
-						<Badge variant='outline' className='ml-2'>
+						<h1 className='text-2xl font-bold max-xl:text-3xl'>Property Details</h1>
+						<Badge variant='outline' className='ml-2 max-xl:hidden'>
 							ID: {id}
 						</Badge>
 					</div>
@@ -253,13 +253,13 @@ export default function Page() {
 							</>
 						) : (
 							<>
-								<Button variant='outline' size='sm' onClick={handleEditClick}>
+								<Button variant='outline' className='max-xl:text-lg max-xl:py-5' onClick={handleEditClick}>
 									<Edit className='h-4 w-4 mr-2' />
 									Edit
 								</Button>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant='outline' size='icon'>
+										<Button variant='outline' className='max-xl:text-lg max-xl:py-5'>
 											<MoreHorizontal className='h-4 w-4' />
 										</Button>
 									</DropdownMenuTrigger>
@@ -276,7 +276,7 @@ export default function Page() {
 				</div>
 
 				{/* Content Cards */}
-				<div className='grid grid-cols-1 xl:grid-cols-2 gap-6'>
+				<div className='grid grid-cols-1 desktop:grid-cols-2 gap-6'>
 					<Card>
 						<CardHeader>
 							<CardTitle>Basic Information</CardTitle>

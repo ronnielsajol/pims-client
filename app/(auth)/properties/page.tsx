@@ -89,19 +89,30 @@ export default function PropertiesPage() {
 	};
 	return (
 		<ProtectedRoute>
-			<div className='max-xl:p-1 laptop:p-5 desktop:p-8 w-full'>
-				<div className={cn("flex w-full", user?.role === "staff" ? "justify-start" : "justify-between")}>
-					<h2 className='text-2xl font-bold mb-4'>All Properties</h2>
-					<div className='flex items-center gap-2'>
+			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
+				<div
+					className={cn(
+						"flex w-full max-xl:flex-col max-xl:mb-2 max-xl:gap-4",
+						user?.role === "staff" ? "justify-start" : "justify-between"
+					)}>
+					<h2 className='text-2xl font-bold mb-4 max-xl:mb-0 max-xl:text-3xl'>All Properties</h2>
+					<div className='flex items-center max-xl:w-full max-xl:justify-stretch gap-2'>
 						{(user?.role === "admin" || user?.role === "master_admin" || user?.role === "property_custodian") && (
-							<Button variant='outline' onClick={handleGenerateReport} disabled={isGenerating}>
+							<Button
+								className='text-muted-foreground max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								variant='outline'
+								onClick={handleGenerateReport}
+								disabled={isGenerating}>
 								<FileDown className='mr-1 h-4 w-4' />
 								{isGenerating ? "Generating..." : "Generate Report"}
 							</Button>
 						)}
 
 						{(user?.role === "admin" || user?.role === "master_admin") && (
-							<Button className='bg-green-500 cursor-pointer hover:bg-green-600' onClick={() => setAddMode(true)} disabled={addMode}>
+							<Button
+								className='bg-green-500 cursor-pointer hover:bg-green-600 max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								onClick={() => setAddMode(true)}
+								disabled={addMode}>
 								<PlusCircle className='mr-1 h-4 w-4' />
 								Add Property
 							</Button>

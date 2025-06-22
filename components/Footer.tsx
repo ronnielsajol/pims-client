@@ -2,7 +2,7 @@ import React from "react";
 
 const Footer = () => {
 	return (
-		<footer className='w-full grid grid-cols-2 p-4 text-[#869099]'>
+		<footer className='w-full grid grid-cols-2 max-xl:grid-cols-1 max-xl:grid-rows-3 p-4 text-[#869099]'>
 			<div className='text-center'>
 				<b className='text-xs font-bold '>
 					For questions and comments, email us at{" "}
@@ -23,7 +23,10 @@ const Footer = () => {
 				<a href='' className='text-[#800000] underline  '>
 					Privacy Statement
 				</a>{" "}
-				| <p className='text-[#800000]'>Version 1</p>
+				| <span className='text-[#800000] max-xl:hidden'>Version 1</span>
+			</div>
+			<div className='text-center text-xs flex items-center justify-center gap-1 text-[#800000]'>
+				<span>Version 1</span>
 			</div>
 		</footer>
 	);
