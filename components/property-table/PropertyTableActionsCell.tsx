@@ -51,6 +51,8 @@ interface PropertyTableActionsCellProps {
 	handleSaveEdit: (propertyId: number) => Promise<void>;
 	handleDelete: (propertyId: number, confirmed: boolean) => Promise<void>;
 	handleAssign: (propertyId: number) => Promise<void>;
+	handleCreatePrintJob: (propertyId: number) => Promise<void>;
+	printingId: number | null;
 }
 
 export default function PropertyTableActionsCell({
@@ -69,6 +71,8 @@ export default function PropertyTableActionsCell({
 	handleSaveEdit,
 	handleDelete,
 	handleAssign,
+	handleCreatePrintJob,
+	printingId,
 }: PropertyTableActionsCellProps) {
 	const p = property;
 	const router = useRouter();
@@ -159,7 +163,7 @@ export default function PropertyTableActionsCell({
 				onClick={() => {
 					router.push(`/properties/${p.id}/details`);
 				}}>
-				View Details
+				Details
 			</Button>
 
 			<DropdownMenu modal={false}>
@@ -179,7 +183,9 @@ export default function PropertyTableActionsCell({
 						{" "}
 						Delete
 					</DropdownMenuItem>
-					<DropdownMenuItem>Print QR code</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => handleCreatePrintJob(p.id)} disabled={printingId === p.id}>
+						Print QR code
+					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
 			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

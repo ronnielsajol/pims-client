@@ -57,3 +57,32 @@ export async function apiFetchWithStatus<T>(
 		status: res.status,
 	};
 }
+
+export async function apiFetchFile(
+	url: string,
+	method: "GET" | "POST" = "GET",
+	body?: Record<string, unknown>,
+	token?: string
+): Promise<Blob> {
+	// It's guaranteed to return a Blob
+	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
+		method,
+		headers: {
+			...(token && { Authorization: `Bearer ${token}` }),
+			...(body && { "Content-Type": "application/json" }),
+		},
+		...(body && { body: JSON.stringify(body) }),
+	});
+
+	if (!res.ok) {
+		// If the request fails, the server likely still sent a JSON error message.
+		const errorBody = await res.json();
+		const error: ApiError = new Error(errorBody.message || "File download failed");
+		error.status = res.status;
+		error.error = errorBody.error;
+		throw error;
+	}
+
+	// Instead of res.json(), we return the response as a raw blob.
+	return res.blob();
+}

@@ -46,6 +46,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		};
 	}>({});
 	const addRowRef = useRef<HTMLTableRowElement | null>(null);
+	const [printingId, setPrintingId] = useState<number | null>(null);
+
 	const handleAssign = async (propertyId: number, overrideConfirm = false) => {
 		const userId = selectedUser[propertyId];
 		if (!userId) return toast.warning("Please select a user");
@@ -101,9 +103,14 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			toast.success("Property updated!", { id: toastId });
 			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
 			fetchProperties();
-		} catch (error) {
-			toast.error("Failed to update property.");
-			console.error(error);
+		} catch (err) {
+			const error = err as ApiError;
+
+			if (error.status === 409) {
+				toast.error(error.message || "This property number already exists.", { id: toastId });
+			} else {
+				toast.error(error.message || "Failed to update property.", { id: toastId });
+			}
 		}
 	};
 
@@ -129,8 +136,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			});
 			await fetchProperties();
 		} catch (err) {
-			console.error("Delete error:", err);
-			toast.error("Failed to delete property");
+			const error = err as ApiError;
+			toast.error(error.message || "Failed to delete property");
 		} finally {
 			setDeleteLoading(false);
 		}
@@ -160,6 +167,29 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			.filter((loc): loc is string => typeof loc === "string" && loc.trim() !== ""); // Filter out empty or undefined
 		return [...new Set(locations)].sort(); // Unique and sorted
 	}, [properties]);
+
+	const handleCreatePrintJob = async (propertyId: number) => {
+		setPrintingId(propertyId);
+		const toastId = toast.loading("Adding property to print queue...");
+
+		try {
+			await apiFetch("/print-jobs/create", "POST", { propertyId: propertyId }, token ?? "");
+
+			toast.success("Property successfully added to print queue!", { id: toastId });
+		} catch (err) {
+			const error = err as ApiError;
+
+			if (error.status === 409) {
+				toast.error(error.message || "This property is already in the print queue.", { id: toastId });
+			} else {
+				toast.error(error.message || "Failed to add property to queue.", { id: toastId });
+			}
+			console.error("Create print job error:", err);
+		} finally {
+			setPrintingId(null);
+		}
+	};
+
 	return (
 		<Table className='overflow-hidden '>
 			<PropertyTableHeader userRole={userRole} />
@@ -196,6 +226,8 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				addRowRef={addRowRef}
 				allAvailableLocations={allAvailableLocations}
 				handleLocationUpdate={handleLocationUpdate}
+				handleCreatePrintJob={handleCreatePrintJob}
+				printingId={printingId}
 			/>
 		</Table>
 	);
