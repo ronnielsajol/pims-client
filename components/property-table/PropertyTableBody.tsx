@@ -2,17 +2,15 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import { TableBody, TableCell } from "@/components/ui/table";
-// Dialog related imports are now primarily handled by UserSelectionCell, but keep for other potential uses or pass through
-// import { Dialog, DialogContent, ... } from "@/components/ui/dialog";
+
 import { Property, User } from "@/types";
 import { cn } from "@/lib/utils";
-// Check, ChevronsUpDown, Popover, Command etc. are used within UserSelectionCell
 import { useEffect, Dispatch, SetStateAction, RefObject } from "react";
-import { Badge } from "@/components/ui/badge"; // Badge might still be used for Department
+import { Badge } from "@/components/ui/badge";
 import PropertyTableActionsCell from "./PropertyTableActionsCell";
 import PropertyTableAddRow from "./PropertyTableAddRow";
-import EditableTextCell from "./cells/EditableTextCell"; // Import new component
-import UserSelectionCell from "./cells/UserSelectionCell"; // Import new component
+import EditableTextCell from "./cells/EditableTextCell";
+import UserSelectionCell from "./cells/UserSelectionCell";
 import LocationSelectionCell from "./cells/LocationSelectionCell";
 
 export interface PropertyTableBodyProps {
@@ -72,6 +70,8 @@ export interface PropertyTableBodyProps {
 	addRowRef: RefObject<HTMLTableRowElement | null>;
 	allAvailableLocations: string[];
 	handleLocationUpdate: (propertyId: number, newLocation: string) => Promise<void>;
+	handleCreatePrintJob: (propertyId: number) => Promise<void>;
+	printingId: number | null;
 }
 
 export default function PropertyTableBody({
@@ -107,6 +107,8 @@ export default function PropertyTableBody({
 	addRowRef,
 	allAvailableLocations,
 	handleLocationUpdate,
+	handleCreatePrintJob,
+	printingId,
 }: PropertyTableBodyProps) {
 	useEffect(() => {
 		if (addMode && addRowRef.current) {
@@ -240,6 +242,8 @@ export default function PropertyTableBody({
 								handleSaveEdit={handleSaveEdit}
 								handleDelete={handleDelete}
 								handleAssign={handleAssign}
+								handleCreatePrintJob={handleCreatePrintJob}
+								printingId={printingId}
 							/>
 						)}
 						{/* Render empty cell for staff for actions to maintain column alignment if "Actions" column header is present */}
