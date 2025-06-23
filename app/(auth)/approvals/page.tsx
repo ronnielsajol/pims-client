@@ -10,6 +10,7 @@ import { ApiError, User, Property } from "@/types"; // Your custom types
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { usePendingApprovals } from "@/context/PendingApprovalsCount";
+import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 // Define the shape of the data we expect from the API
 interface ReassignmentRequest {
@@ -81,8 +82,8 @@ export default function ApprovalsPage() {
 	return (
 		<ProtectedRoute>
 			<div className='max-xl:p-1 laptop:p-5 desktop:p-8 w-full'>
-				<div className='flex w-full justify-start'>
-					<h2 className='text-2xl font-bold mb-4'>All Pending Reassignments</h2>
+				<div className='flex w-full justify-start mb-4'>
+					<PageBreadcrumb />
 				</div>
 				<div className='rounded border shadow-md'>
 					<Table>

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { PlusCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 const UsersPage = () => {
 	const { token, user } = useAuth();
@@ -28,8 +29,8 @@ const UsersPage = () => {
 	return (
 		<ProtectedRoute>
 			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
-				<div className='flex justify-between w-full max-xl:flex-col max-xl:gap-4 max-xl:mb-4'>
-					<h2 className='text-2xl font-bold mb-4 max-xl:mb-0 max-xl:text-3xl'>All Staff</h2>
+				<div className='flex justify-between w-full max-xl:flex-col max-xl:gap-4 mb-4'>
+					<PageBreadcrumb />
 					<Button
 						className='bg-green-500 cursor-pointer hover:bg-green-600'
 						onClick={() => {
