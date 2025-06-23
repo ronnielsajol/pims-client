@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PropertyTable from "@/components/property-table/PropertyTable";
 import { PlusCircle, FileDown } from "lucide-react";
+import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 export default function PropertiesPage() {
 	const { token, user } = useAuth();
@@ -92,14 +93,14 @@ export default function PropertiesPage() {
 			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
 				<div
 					className={cn(
-						"flex w-full max-xl:flex-col max-xl:mb-2 max-xl:gap-4",
+						"flex w-full max-xl:flex-col max-xl:mb-2 max-xl:gap-4 mb-4",
 						user?.role === "staff" ? "justify-start" : "justify-between"
 					)}>
-					<h2 className='text-2xl font-bold mb-4 max-xl:mb-0 max-xl:text-3xl'>All Properties</h2>
+					<PageBreadcrumb />
 					<div className='flex items-center max-xl:w-full max-xl:justify-stretch gap-2'>
 						{(user?.role === "admin" || user?.role === "master_admin" || user?.role === "property_custodian") && (
 							<Button
-								className='text-muted-foreground max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								className='text-muted-foreground max-xl:flex-1 max-xl:w-full'
 								variant='outline'
 								onClick={handleGenerateReport}
 								disabled={isGenerating}>
@@ -110,7 +111,7 @@ export default function PropertiesPage() {
 
 						{(user?.role === "admin" || user?.role === "master_admin") && (
 							<Button
-								className='bg-green-500 cursor-pointer hover:bg-green-600 max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								className='bg-green-500 cursor-pointer hover:bg-green-600 max-xl:flex-1 max-xl:w-full'
 								onClick={() => setAddMode(true)}
 								disabled={addMode}>
 								<PlusCircle className='mr-1 h-4 w-4' />
