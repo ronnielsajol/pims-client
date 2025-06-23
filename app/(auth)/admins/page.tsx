@@ -28,9 +28,9 @@ const AdminsPage = () => {
 
 	return (
 		<ProtectedRoute>
-			<div className='max-xl:p-1 laptop:p-5 desktop:p-8 w-full'>
-				<div className='flex justify-between w-full'>
-					<h2 className='text-2xl font-bold mb-4'>All Admin</h2>
+			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
+				<div className='flex justify-between w-full max-xl:flex-col max-xl:gap-4 max-xl:mb-4'>
+					<h2 className='text-2xl font-bold mb-4 max-xl:mb-0 max-xl:text-3xl'>All Admin</h2>
 					<Button
 						className='bg-green-500 cursor-pointer hover:bg-green-600'
 						onClick={() => {

@@ -99,7 +99,7 @@ export default function PropertiesPage() {
 					<div className='flex items-center max-xl:w-full max-xl:justify-stretch gap-2'>
 						{(user?.role === "admin" || user?.role === "master_admin" || user?.role === "property_custodian") && (
 							<Button
-								className='text-muted-foreground max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								className='text-muted-foreground max-xl:flex-1 max-xl:w-full'
 								variant='outline'
 								onClick={handleGenerateReport}
 								disabled={isGenerating}>
@@ -110,7 +110,7 @@ export default function PropertiesPage() {
 
 						{(user?.role === "admin" || user?.role === "master_admin") && (
 							<Button
-								className='bg-green-500 cursor-pointer hover:bg-green-600 max-xl:flex-1 max-xl:w-full max-xl:text-xl max-xl:py-5 '
+								className='bg-green-500 cursor-pointer hover:bg-green-600 max-xl:flex-1 max-xl:w-full'
 								onClick={() => setAddMode(true)}
 								disabled={addMode}>
 								<PlusCircle className='mr-1 h-4 w-4' />

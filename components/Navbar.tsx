@@ -107,7 +107,7 @@ const Navbar = () => {
 			</div>
 
 			{/* Mobile Nav */}
-			<div className='laptop:hidden'>
+			<div className='laptop:hidden max-xl:flex'>
 				<Sheet open={menuOpen} onOpenChange={setMenuOpen}>
 					<SheetTrigger asChild>
 						<button className='relative flex items-center justify-center px-2'>
