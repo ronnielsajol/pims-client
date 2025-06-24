@@ -25,7 +25,7 @@ const Footer = () => {
 				</a>{" "}
 				| <span className='text-[#800000] max-xl:hidden'>Version 1</span>
 			</div>
-			<div className='text-center text-xs flex items-center justify-center gap-1 text-[#800000]'>
+			<div className='hidden text-center text-xs max-xl:flex items-center justify-center gap-1 text-[#800000]'>
 				<span>Version 1</span>
 			</div>
 		</footer>

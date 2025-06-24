@@ -17,7 +17,7 @@ export default function AddAdminPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
@@ -27,7 +27,7 @@ export default function AddAdminPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "admin" }, token ?? "");
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "admin" });
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");

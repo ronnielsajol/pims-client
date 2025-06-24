@@ -1,13 +1,13 @@
 "use client";
 
+import { apiFetch } from "@/lib/api";
 import { User } from "@/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 type AuthContextType = {
 	user: User | null;
-	token: string | null;
-	login: (token: string, user: User) => void;
+	login: (user: User) => void;
 	logout: () => void;
 	loading: boolean;
 };
@@ -16,37 +16,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const [user, setUser] = useState<User | null>(null);
-	const [token, setToken] = useState<string | null>(null);
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
-	useEffect(() => {
-		const storedToken = localStorage.getItem("token");
-		const storedUser = localStorage.getItem("user");
-
-		if (storedToken && storedUser) {
-			setToken(storedToken);
-			setUser(JSON.parse(storedUser));
+	const checkUserStatus = async () => {
+		try {
+			const res = await apiFetch<{ user: User }>("/auth/me");
+			if (res.user) {
+				setUser(res.user);
+			}
+		} catch (error) {
+			console.log("Error: ", error);
+			console.log("No active session found.");
+			setUser(null);
+		} finally {
+			setLoading(false);
 		}
+	};
 
-		setLoading(false);
+	useEffect(() => {
+		checkUserStatus();
 	}, []);
 
-	const login = (token: string, user: User) => {
-		setToken(token);
+	const login = (user: User) => {
 		setUser(user);
-		localStorage.setItem("token", token);
-		localStorage.setItem("user", JSON.stringify(user));
 	};
 
-	const logout = () => {
-		router.push("/");
-		setToken(null);
-		setUser(null);
-		localStorage.clear();
+	const logout = async () => {
+		try {
+			await apiFetch("/auth/sign-out", "GET");
+		} catch (error) {
+			console.error("Failed to sign out on server", error);
+		} finally {
+			setUser(null);
+			window.location.href = "/";
+		}
 	};
 
-	return <AuthContext.Provider value={{ user, token, login, logout, loading }}>{children}</AuthContext.Provider>;
+	return <AuthContext.Provider value={{ user, login, logout, loading }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

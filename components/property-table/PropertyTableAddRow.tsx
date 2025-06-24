@@ -16,7 +16,6 @@ interface PropertyTableAddRowProps {
 	addLoading: boolean;
 	setAddLoading: Dispatch<SetStateAction<boolean>>;
 	setAddMode: Dispatch<SetStateAction<boolean>>;
-	token: string | null;
 	fetchProperties: () => Promise<void>;
 	addRowRef: RefObject<HTMLTableRowElement | null>;
 }
@@ -28,7 +27,6 @@ export default function PropertyTableAddRow({
 	addLoading,
 	setAddLoading,
 	setAddMode,
-	token,
 	fetchProperties,
 	addRowRef,
 }: PropertyTableAddRowProps) {
@@ -36,7 +34,7 @@ export default function PropertyTableAddRow({
 		setAddLoading(true);
 		const toastId = toast.loading("Adding property...");
 		try {
-			await apiFetch("/properties/add", "POST", { property: newProperty }, token ?? "");
+			await apiFetch("/properties/add", "POST", { property: newProperty });
 			toast.success("Property added successfully!", { id: toastId });
 			setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
 			setAddMode(false);

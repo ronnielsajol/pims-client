@@ -6,16 +6,19 @@ import { useAuth } from "@/context/AuthContext";
 import { motion } from "motion/react";
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
-	const { token, loading } = useAuth();
+	const { user, loading } = useAuth();
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!loading && !token) {
+		if (loading) {
+			return;
+		}
+		if (!user) {
 			router.push("/");
 		}
-	}, [token, loading]);
+	}, [user, loading, router]);
 
-	if (loading || !token) {
+	if (loading || !user) {
 		return (
 			<div className='p-8 w-screen h-screen flex items-center justify-center'>
 				<motion.div

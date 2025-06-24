@@ -8,7 +8,6 @@ import PropertyTableHeader from "./PropertyTableHeader";
 import PropertyTableBody from "./PropertyTableBody";
 
 interface PropertyTableState {
-	token: string | null;
 	user: User | null;
 	properties: Property[];
 	users: User[];
@@ -18,7 +17,7 @@ interface PropertyTableState {
 }
 
 export default function PropertyTable({ state }: { state: PropertyTableState }) {
-	const { token, user, properties, users, fetchProperties, addMode, setAddMode } = state;
+	const { user, properties, users, fetchProperties, addMode, setAddMode } = state;
 	const userRole = user?.role;
 
 	const [selectedUser, setSelectedUser] = useState<{ [propertyId: number]: string }>({});
@@ -68,12 +67,10 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 		const toastId = toast.loading(`${isReassigning ? "Submitting request" : "Assigning property"}...`);
 		try {
-			const { data, status } = await apiFetchWithStatus<{ message?: string }>(
-				"/properties/assign",
-				"POST",
-				{ userId, propertyId },
-				token ?? ""
-			);
+			const { data, status } = await apiFetchWithStatus<{ message?: string }>("/properties/assign", "POST", {
+				userId,
+				propertyId,
+			});
 
 			if (status === 201 || status === 200) {
 				toast.success("Property assigned successfully!", { id: toastId });
@@ -99,7 +96,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		const toastId = toast.loading("Updating property...");
 
 		try {
-			await apiFetch(`/properties/update/${propertyId}`, "PATCH", { property: values }, token ?? "");
+			await apiFetch(`/properties/update/${propertyId}`, "PATCH", { property: values });
 			toast.success("Property updated!", { id: toastId });
 			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
 			fetchProperties();
@@ -122,8 +119,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			const res = await apiFetch<{ requiresConfirmation?: boolean; message?: string }>(
 				`/properties/${propertyId}`,
 				"DELETE",
-				{ confirmed },
-				token ?? ""
+				{ confirmed }
 			);
 
 			if (res.requiresConfirmation && !confirmed) {
@@ -149,8 +145,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 			await apiFetch(
 				`/properties/${propertyId}/location-detail`,
 				"PATCH",
-				{ property: { location_detail: newLocation } }, // Ensure backend handles this field
-				token ?? ""
+				{ property: { location_detail: newLocation } } // Ensure backend handles this field
 			);
 			toast.success("Location updated!", { id: toastId });
 			await fetchProperties(); // Refresh data
@@ -173,7 +168,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		const toastId = toast.loading("Adding property to print queue...");
 
 		try {
-			await apiFetch("/print-jobs/create", "POST", { propertyId: propertyId }, token ?? "");
+			await apiFetch("/print-jobs/create", "POST", { propertyId: propertyId });
 
 			toast.success("Property successfully added to print queue!", { id: toastId });
 		} catch (err) {
@@ -197,7 +192,6 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				properties={properties}
 				users={users}
 				userRole={userRole}
-				token={token}
 				fetchProperties={fetchProperties}
 				addMode={addMode}
 				setAddMode={setAddMode as Dispatch<SetStateAction<boolean>>} // Cast to satisfy PropertyTableBodyProps

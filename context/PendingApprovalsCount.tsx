@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useState, useContext, useCallback, useEffect } from "react";
 import { apiFetch } from "@/lib/api"; // Your API fetch
-import { useAuth } from "./AuthContext"; // Assuming you have an AuthContext for user/token
+import { useAuth } from "./AuthContext"; // Assuming you have an AuthContext for user
 import { Property, User } from "@/types";
 
 interface PendingApprovalsContextType {
@@ -23,16 +23,15 @@ const PendingApprovalsContext = createContext<PendingApprovalsContextType | unde
 
 export const PendingApprovalsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [pendingCount, setPendingCount] = useState(0);
-	const { user, token } = useAuth(); // Get user and token from your auth context
+	const { user } = useAuth(); // Get user from your auth context
 
 	const fetchPendingCount = useCallback(async () => {
-		if (user?.role === "master_admin" && token) {
+		if (user?.role === "master_admin" && user) {
 			try {
 				const response = await apiFetch<{ data?: ReassignmentRequest[] }>(
 					"/properties/reassignments/pending",
 					"GET",
-					undefined,
-					token
+					undefined
 				); // Use a more general type for 'data'
 				if (response && response.data && Array.isArray(response.data)) {
 					setPendingCount(response.data.length);
@@ -44,9 +43,9 @@ export const PendingApprovalsProvider: React.FC<{ children: React.ReactNode }> =
 				setPendingCount(0);
 			}
 		} else {
-			setPendingCount(0); // Reset if not master admin or no token
+			setPendingCount(0); // Reset if not master admin
 		}
-	}, [user, token]);
+	}, [user]);
 
 	useEffect(() => {
 		fetchPendingCount(); // Initial fetch
@@ -57,7 +56,7 @@ export const PendingApprovalsProvider: React.FC<{ children: React.ReactNode }> =
 			clearInterval(interval);
 			window.removeEventListener("focus", fetchPendingCount);
 		};
-	}, [fetchPendingCount]); // fetchPendingCount depends on user/token
+	}, [fetchPendingCount]); // fetchPendingCount depends on user
 
 	return (
 		<PendingApprovalsContext.Provider value={{ pendingCount, fetchPendingCount }}>

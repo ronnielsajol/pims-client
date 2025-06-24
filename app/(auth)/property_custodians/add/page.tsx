@@ -17,7 +17,7 @@ export default function AddCustodianPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
@@ -27,7 +27,7 @@ export default function AddCustodianPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "property_custodian" }, token ?? "");
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "property_custodian" });
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");
