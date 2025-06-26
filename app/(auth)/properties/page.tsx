@@ -11,37 +11,35 @@ import { PlusCircle, FileDown } from "lucide-react";
 import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 export default function PropertiesPage() {
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [properties, setProperties] = useState<Property[]>([]);
 	const [users, setUsers] = useState<User[]>([]);
 	const [addMode, setAddMode] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
 
 	const fetchProperties = async () => {
-		if (!token || !user) return;
+		if (!user) return;
 
 		try {
 			// Fetch assigned properties
 			const propsRes = await apiFetch<{ success: boolean; data: Property[] }>(
 				"/properties?includeAssignments=true",
 				"GET",
-				undefined,
-				token
+				undefined
 			);
 			setProperties(propsRes.data);
 
 			// Fetch users depending on role
 			if (user.role === "property_custodian") {
 				// Custodian sees staff
-				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined, token);
+				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined);
 				setUsers(usersRes.data);
 			} else if (user.role === "admin" || user.role === "master_admin") {
 				// Admins see custodians
 				const usersRes = await apiFetch<{ success: boolean; data: User[] }>(
 					"/users?roles=property_custodian",
 					"GET",
-					undefined,
-					token
+					undefined
 				);
 				setUsers(usersRes.data);
 			}
@@ -51,15 +49,17 @@ export default function PropertiesPage() {
 	};
 
 	useEffect(() => {
-		fetchProperties();
-	}, [token, user]);
+		if (user) {
+			fetchProperties();
+		}
+	}, [user]);
 
 	const handleGenerateReport = async () => {
-		if (!token) return;
+		if (!user) return;
 		setIsGenerating(true);
 		try {
 			// Use the new helper function to fetch the file blob
-			const blob = await apiFetchFile("/properties/report", "GET", undefined, token);
+			const blob = await apiFetchFile("/properties/report", "GET", undefined);
 
 			const url = window.URL.createObjectURL(blob);
 			const link = document.createElement("a");
@@ -80,7 +80,6 @@ export default function PropertiesPage() {
 	};
 
 	const propertyTableState = {
-		token,
 		user,
 		properties,
 		users,

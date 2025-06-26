@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
@@ -13,32 +13,28 @@ import Link from "next/link";
 export default function Home() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [isLoading, setLoading] = useState(false);
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSuccess, setSuccess] = useState(true);
 	const [errorMessage, setErrorMessage] = useState("");
-	const { login } = useAuth();
+	const { login, user, loading: authLoading } = useAuth();
 	const router = useRouter();
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setLoading(true);
+		setIsSubmitting(true);
 		setSuccess(true);
 		setErrorMessage("");
 
 		try {
-			const res = await apiFetch<{ success: boolean; message: string; data: { token: string; user: User } }>(
-				"/auth/sign-in",
-				"POST",
-				{
-					email,
-					password,
-				}
-			);
+			const res = await apiFetch<{ success: boolean; message: string; data: { user: User } }>("/auth/sign-in", "POST", {
+				email,
+				password,
+			});
 			console.log("Login response:", res);
 
 			if (res.success) {
-				const { token, user } = res.data;
-				login(token, user);
+				const { user } = res.data;
+				login(user);
 				router.push("/dashboard");
 			} else {
 				setSuccess(false);
@@ -50,9 +46,19 @@ export default function Home() {
 			setSuccess(false);
 			setErrorMessage(error.message || "Something went wrong");
 		} finally {
-			setLoading(false);
+			setIsSubmitting(false);
 		}
 	};
+
+	useEffect(() => {
+		if (authLoading) {
+			return;
+		}
+		if (user) {
+			router.push("/dashboard");
+		}
+	}, [authLoading, user, router]);
+
 	return (
 		<div className='max-xl:relative  laptop:grid laptop:grid-cols-3  gap-y-0 gap-x-0 min-h-screen '>
 			<div className='laptop:col-span-2 bg-[#c3c3c3] bg-[url("/images/pup-bg.jpg")] bg-cover h-screen w-full'></div>
@@ -79,8 +85,8 @@ export default function Home() {
 					/>
 					<Button
 						className='bg-blue-600 text-white px-4 py-2 rounded w-full cursor-pointer hover:bg-blue-500 max-w-full '
-						disabled={isLoading}>
-						{isLoading ? <LoaderCircle className='animate-spin' /> : "Login"}
+						disabled={isSubmitting}>
+						{isSubmitting ? <LoaderCircle className='animate-spin' /> : "Login"}
 					</Button>
 				</form>
 				<p className='text-center'>

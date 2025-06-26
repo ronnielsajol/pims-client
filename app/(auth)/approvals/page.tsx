@@ -24,7 +24,7 @@ interface ReassignmentRequest {
 }
 
 export default function ApprovalsPage() {
-	const { token } = useAuth();
+	const { user } = useAuth();
 	const [requests, setRequests] = useState<ReassignmentRequest[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const { fetchPendingCount } = usePendingApprovals();
@@ -32,12 +32,10 @@ export default function ApprovalsPage() {
 	// Function to fetch pending requests from the backend
 	const fetchPendingRequests = async () => {
 		try {
-			// We don't need the status here, so the original apiFetch is fine
 			const pendingRequests = await apiFetch<{ data: ReassignmentRequest[] }>(
 				"/properties/reassignments/pending",
 				"GET",
-				undefined,
-				token ?? "" // Replace with how you get your token
+				undefined
 			);
 			setRequests(pendingRequests.data);
 		} catch (err) {
@@ -49,14 +47,14 @@ export default function ApprovalsPage() {
 	// Fetch data when the component mounts
 	useEffect(() => {
 		fetchPendingRequests();
-	}, []);
+	}, [user]);
 
 	// Function to handle the approve/deny action
 	const handleReviewRequest = async (requestId: number, newStatus: "approved" | "denied") => {
 		const toastId = toast.loading(`Submitting ${newStatus} decision...`);
 
 		try {
-			await apiFetch("/properties/reassignments/review", "POST", { requestId, newStatus }, token ?? "");
+			await apiFetch("/properties/reassignments/review", "POST", { requestId, newStatus });
 
 			toast.success("Decision submitted successfully!", { id: toastId });
 

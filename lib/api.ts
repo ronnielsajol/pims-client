@@ -3,15 +3,15 @@ import { ApiError } from "@/types";
 export async function apiFetch<T>(
 	url: string,
 	method: "GET" | "POST" | "PATCH" | "DELETE" = "GET",
-	body?: Record<string, unknown>,
-	token?: string
+	body?: Record<string, unknown>
 ): Promise<T> {
 	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
 		method,
 		headers: {
 			"Content-Type": "application/json",
-			...(token && { Authorization: `Bearer ${token}` }),
 		},
+		credentials: "include",
+
 		...(body && { body: JSON.stringify(body) }),
 	});
 	if (!res.ok) {
@@ -28,32 +28,40 @@ export async function apiFetch<T>(
 export async function apiFetchWithStatus<T>(
 	url: string,
 	method: "GET" | "POST" | "PATCH" | "DELETE" = "GET",
-	body?: Record<string, unknown>,
-	token?: string
+	body?: Record<string, unknown>
 ): Promise<{ data: T; status: number }> {
-	// <--- Changed return type
-
 	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
 		method,
 		headers: {
 			"Content-Type": "application/json",
-			...(token && { Authorization: `Bearer ${token}` }),
 		},
+		credentials: "include",
 		...(body && { body: JSON.stringify(body) }),
 	});
 
-	const responseBody = await res.json();
-
 	if (!res.ok) {
-		const error: ApiError = new Error(responseBody.message || "Unknown error");
+		let errorBody = { message: `Request failed with status ${res.status}` };
+		try {
+			errorBody = await res.json();
+		} catch {}
+
+		const error: ApiError = new Error(errorBody.message || "An unknown error occurred");
 		error.status = res.status;
-		error.error = responseBody.error;
+		error.error = (errorBody as ApiError).error; // Cast to any to access potential .error property
 		throw error;
 	}
 
-	// Returns an object with both the data and the status
+	const contentType = res.headers.get("content-type");
+	let data: T;
+
+	if (contentType && contentType.includes("application/json")) {
+		data = await res.json();
+	} else {
+		data = {} as T;
+	}
+
 	return {
-		data: responseBody,
+		data,
 		status: res.status,
 	};
 }
@@ -61,28 +69,29 @@ export async function apiFetchWithStatus<T>(
 export async function apiFetchFile(
 	url: string,
 	method: "GET" | "POST" = "GET",
-	body?: Record<string, unknown>,
-	token?: string
+	body?: Record<string, unknown>
 ): Promise<Blob> {
-	// It's guaranteed to return a Blob
 	const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${url}`, {
 		method,
 		headers: {
-			...(token && { Authorization: `Bearer ${token}` }),
 			...(body && { "Content-Type": "application/json" }),
 		},
+		credentials: "include",
 		...(body && { body: JSON.stringify(body) }),
 	});
 
 	if (!res.ok) {
-		// If the request fails, the server likely still sent a JSON error message.
-		const errorBody = await res.json();
-		const error: ApiError = new Error(errorBody.message || "File download failed");
+		let errorBody = { message: `File download failed with status ${res.status}` };
+		try {
+			errorBody = await res.json();
+		} catch {}
+
+		const error: ApiError = new Error(errorBody.message || "An unknown error occurred during file download");
 		error.status = res.status;
-		error.error = errorBody.error;
+		error.error = (errorBody as ApiError).error;
 		throw error;
 	}
 
-	// Instead of res.json(), we return the response as a raw blob.
+	// This part remains the same, as it correctly handles the file data
 	return res.blob();
 }

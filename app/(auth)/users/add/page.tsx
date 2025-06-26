@@ -17,7 +17,7 @@ export default function AddStaffPage() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 
@@ -27,7 +27,7 @@ export default function AddStaffPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "staff" }, token ?? "");
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "staff" });
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");

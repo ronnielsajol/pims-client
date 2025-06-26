@@ -17,7 +17,6 @@ export interface PropertyTableBodyProps {
 	properties: Property[];
 	users: User[];
 	userRole: string | undefined;
-	token: string | null;
 	fetchProperties: () => Promise<void>;
 	addMode: boolean;
 	setAddMode: Dispatch<SetStateAction<boolean>>;
@@ -78,7 +77,6 @@ export default function PropertyTableBody({
 	properties,
 	users,
 	userRole,
-	token,
 	fetchProperties,
 	addMode,
 	setAddMode,
@@ -256,7 +254,6 @@ export default function PropertyTableBody({
 					addLoading={addLoading}
 					setAddLoading={setAddLoading}
 					setAddMode={setAddMode}
-					token={token}
 					fetchProperties={fetchProperties}
 					addRowRef={addRowRef}
 				/>

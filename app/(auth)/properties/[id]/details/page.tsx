@@ -108,7 +108,7 @@ const DetailsSkeleton = () => (
 );
 
 export default function Page() {
-	const { token } = useAuth();
+	const { user } = useAuth();
 	const params = useParams();
 	const id = params?.id as string;
 	const router = useRouter();
@@ -123,12 +123,12 @@ export default function Page() {
 	const categoryOptions = ["Annex A", "Annex B", "Annex C"] as const;
 
 	const fetchProperties = async () => {
-		if (!token || !id) return;
+		if (!user || !id) return;
 		setIsLoading(true);
 		setError(null);
 
 		try {
-			const response = await apiFetch<{ data: PropertyWithDetails }>(`/properties/${id}/details`, "GET", undefined, token);
+			const response = await apiFetch<{ data: PropertyWithDetails }>(`/properties/${id}/details`, "GET", undefined);
 			setProperty(response.data);
 		} catch (error) {
 			setError("Failed to fetch property details. Please try again.");
@@ -140,7 +140,7 @@ export default function Page() {
 
 	useEffect(() => {
 		fetchProperties();
-	}, [token, id]);
+	}, [user, id]);
 
 	const handleBack = () => {
 		router.back();
@@ -199,8 +199,8 @@ export default function Page() {
 			};
 
 			await Promise.all([
-				apiFetch(`/properties/update/${id}`, "PATCH", { property: corePropertyPayload }, token!),
-				apiFetch(`/properties/${id}/details`, "PATCH", { details: detailsPayload }, token!),
+				apiFetch(`/properties/update/${id}`, "PATCH", { property: corePropertyPayload }),
+				apiFetch(`/properties/${id}/details`, "PATCH", { details: detailsPayload }),
 			]);
 
 			toast.success("Property details updated successfully!", { id: toastId });

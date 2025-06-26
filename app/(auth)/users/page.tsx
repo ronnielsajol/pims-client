@@ -12,19 +12,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 const UsersPage = () => {
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [users, setUsers] = useState<User[]>([]);
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!token) return;
+		if (!user) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined)
 			.then((res) => {
 				setUsers(res.data);
 			})
 			.catch((err) => console.log(err.message));
-	}, [token]);
+	}, [user]);
 
 	return (
 		<ProtectedRoute>

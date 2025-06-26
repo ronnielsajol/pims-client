@@ -13,19 +13,19 @@ import { AnimatePresence, motion } from "motion/react";
 import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 const AdminsPage = () => {
-	const { token, user } = useAuth();
+	const { user } = useAuth();
 	const [users, setUsers] = useState<User[]>([]);
 	const router = useRouter();
 
 	useEffect(() => {
-		if (!token) return;
+		if (!user) return;
 		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users?roles=admin", "GET", undefined, token ?? "")
+		apiFetch<{ success: boolean; data: User[] }>("/users?roles=admin", "GET", undefined)
 			.then((res) => {
 				setUsers(res.data);
 			})
 			.catch((err) => console.log(err.message));
-	}, [token]);
+	}, [user]);
 
 	return (
 		<ProtectedRoute>
