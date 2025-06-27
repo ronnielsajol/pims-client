@@ -47,8 +47,8 @@ export default function AddCustodianPage() {
 
 	return (
 		<ProtectedRoute>
-			<div className='relative p-8 w-10/12 mx-auto flex flex-col justify-start items-center'>
-				<div className='container max-w-3xl py-10'>
+			<div className='relative p-2 laptop:p-8 laptop:w-10/12 mx-auto flex flex-col justify-start items-center'>
+				<div className='container max-w-3xl py-4 laptop:py-10'>
 					<Link
 						href='/property_custodians'
 						className='inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-6'>
