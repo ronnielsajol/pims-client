@@ -22,11 +22,7 @@ export default function PropertiesPage() {
 
 		try {
 			// Fetch assigned properties
-			const propsRes = await apiFetch<{ success: boolean; data: Property[] }>(
-				"/properties?includeAssignments=true",
-				"GET",
-				undefined
-			);
+			const propsRes = await apiFetch<{ success: boolean; data: Property[] }>("/properties", "GET", undefined);
 			setProperties(propsRes.data);
 
 			// Fetch users depending on role

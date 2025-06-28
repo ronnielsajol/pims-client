@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { PageBreadcrumb } from "@/components/PageBreadCrumb";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const PropertyCustodiansPage = () => {
 	const { user } = useAuth();
@@ -42,13 +44,14 @@ const PropertyCustodiansPage = () => {
 					</Button>
 				</div>
 				<div className='rounded border shadow-md'>
-					<Table>
+					<Table className='table-auto'>
 						<TableHeader>
 							<TableRow className='bg-muted/50'>
-								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
-								<TableHead className=' text-muted-foreground'>Name</TableHead>
-								<TableHead className=' text-muted-foreground'>Email</TableHead>
-								<TableHead className=' text-muted-foreground'>Actions</TableHead>
+								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-3xs text-muted-foreground'>Name</TableHead>
+								<TableHead className='w-3xs text-muted-foreground'>Email</TableHead>
+								<TableHead className='w-36 text-muted-foreground text-center'>Department</TableHead>
+								<TableHead className='text-muted-foreground text-end'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -64,6 +67,15 @@ const PropertyCustodiansPage = () => {
 										<TableCell className='font-medium '>{u.id}</TableCell>
 										<TableCell className='font-medium'>{u.name}</TableCell>
 										<TableCell className=''>{u.email}</TableCell>
+										<TableCell className={cn("text-center", !u.department && "text-black/40 font-medium text-sm")}>
+											{u.department ? (
+												<Badge variant={"outline"} className='font-normal py-1 px-4 rounded-3xl bg-blue-100 text-blue-800 border-transparent'>
+													{u.department}
+												</Badge>
+											) : (
+												"Unassigned"
+											)}
+										</TableCell>
 									</motion.tr>
 								))}
 							</AnimatePresence>

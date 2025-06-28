@@ -53,7 +53,7 @@ const Navbar = () => {
 			</Link>
 
 			{/* Desktop Nav */}
-			<div className='max-xl:hidden mx-auto max-w-9/12 w-full flex items-center'>
+			<div className='max-xl:hidden mx-auto max-w-10/12 desktop:px-6 w-full flex items-center'>
 				<Link className='flex gap-1.5 text-[20px] items-center' href='/dashboard'>
 					<Image src='/images/pup-logo.png' alt='PUP Logo' height={33} width={33} />
 					<h3 className='text-[#800000]'>PIMS</h3>

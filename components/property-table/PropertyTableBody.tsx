@@ -156,10 +156,10 @@ export default function PropertyTableBody({
 						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
 							<EditableTextCell {...getEditableCellProps(p, "description")} />
 						</TableCell>
-						<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
 							<EditableTextCell {...getEditableCellProps(p, "quantity")} />
 						</TableCell>
-						<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
 							<EditableTextCell {...getEditableCellProps(p, "value")} />
 						</TableCell>
 						<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>

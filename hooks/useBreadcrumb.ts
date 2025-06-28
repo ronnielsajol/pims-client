@@ -8,7 +8,7 @@ interface BreadcrumbItem {
 }
 
 const routeLabels: Record<string, string> = {
-	dashboard: "Dashboard", // Fixed typo: was "dashbard"
+	dashboard: "Dashboard",
 	property_custodians: "Property Custodians",
 	add: "Add New",
 	edit: "Edit",
@@ -16,6 +16,11 @@ const routeLabels: Record<string, string> = {
 	properties: "Properties",
 	admins: "Admins",
 	approvals: "Approvals",
+	details: "Details",
+};
+
+const formatLabel = (segment: string): string => {
+	return routeLabels[segment] || segment.replace(/\_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 export const useBreadcrumb = (): BreadcrumbItem[] => {
@@ -25,13 +30,7 @@ export const useBreadcrumb = (): BreadcrumbItem[] => {
 		const segments = pathname.split("/").filter(Boolean);
 		const breadcrumbs: BreadcrumbItem[] = [];
 
-		// Handle root/dashboard case - return empty array to hide breadcrumb
-		// Or return single item to show "Dashboard" only
 		if (pathname === "/" || pathname === "/dashboard") {
-			// Option 1: Hide breadcrumb completely on dashboard
-			// return [];
-
-			// Option 2: Show "Dashboard" only (current behavior)
 			breadcrumbs.push({
 				label: "Dashboard",
 				href: "/dashboard",
@@ -40,22 +39,36 @@ export const useBreadcrumb = (): BreadcrumbItem[] => {
 			return breadcrumbs;
 		}
 
-		// Always add home/dashboard as first breadcrumb (not current page)
+		// Always start with Dashboard
 		breadcrumbs.push({
 			label: "Dashboard",
 			href: "/dashboard",
 			isCurrentPage: false,
 		});
 
-		// Build breadcrumbs from path segments
 		let currentPath = "";
+		const nonNumericSegments: { segment: string; index: number; path: string }[] = [];
+
 		segments.forEach((segment, index) => {
 			currentPath += `/${segment}`;
-			const isLast = index === segments.length - 1;
+
+			if (!isNaN(Number(segment))) {
+				return;
+			}
+
+			nonNumericSegments.push({
+				segment,
+				index,
+				path: currentPath,
+			});
+		});
+
+		nonNumericSegments.forEach((item, index) => {
+			const isLast = index === nonNumericSegments.length - 1;
 
 			breadcrumbs.push({
-				label: routeLabels[segment] || segment.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-				href: currentPath,
+				label: formatLabel(item.segment),
+				href: item.path,
 				isCurrentPage: isLast,
 			});
 		});

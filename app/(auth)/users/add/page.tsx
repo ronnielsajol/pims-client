@@ -37,7 +37,6 @@ export default function AddStaffPage() {
 		} catch (err: unknown) {
 			const error = err as ApiError;
 			console.error("API Error:", error.message || error.error);
-			alert(error.message || "Something went wrong");
 		}
 	};
 

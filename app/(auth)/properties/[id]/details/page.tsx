@@ -21,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import EditableDetailSelect from "@/components/EditableDetailSelect";
+import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 interface EditableDetailItemProps {
 	label: string;
@@ -142,9 +143,9 @@ export default function Page() {
 		fetchProperties();
 	}, [user, id]);
 
-	const handleBack = () => {
-		router.back();
-	};
+	// const handleBack = () => {
+	// 	router.back();
+	// };
 
 	const handleEditClick = () => {
 		setIsEditing(true);
@@ -224,17 +225,18 @@ export default function Page() {
 
 	return (
 		<ProtectedRoute>
-			<div className='py-12 px-2 desktop:px-24  w-full'>
+			<div className='py-12 px-2 desktop:px-8  w-full'>
 				{/* Header */}
 				<div className='flex items-center justify-between mb-6 max-xl:flex-col max-xl:items-start max-xl:gap-4 max-xl:mb-2'>
 					<div className='flex items-center gap-4 max-xl:w-full'>
-						<Button variant='outline' size='icon' onClick={handleBack}>
+						{/* <Button variant='outline' size='icon' onClick={handleBack}>
 							<ArrowLeft className='h-4 w-4' />
 						</Button>
 						<h1 className='text-2xl font-bold max-xl:text-3xl'>Property Details</h1>
 						<Badge variant='outline' className='ml-2 max-xl:hidden'>
 							ID: {id}
-						</Badge>
+						</Badge> */}
+						<PageBreadcrumb />
 					</div>
 					<div className='flex items-center gap-2'>
 						{isEditing ? (
