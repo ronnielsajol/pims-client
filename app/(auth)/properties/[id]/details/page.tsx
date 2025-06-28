@@ -1,7 +1,6 @@
 "use client";
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -12,8 +11,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { apiFetch } from "@/lib/api";
 import { ApiError, Property, PropertyDetails, PropertyWithDetails } from "@/types";
-import { ArrowLeft, Edit, MoreHorizontal, Save, Trash2, X } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { Edit, MoreHorizontal, Save, Trash2, X } from "lucide-react";
+import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -112,7 +111,6 @@ export default function Page() {
 	const { user } = useAuth();
 	const params = useParams();
 	const id = params?.id as string;
-	const router = useRouter();
 
 	const [property, setProperty] = useState<PropertyWithDetails | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
