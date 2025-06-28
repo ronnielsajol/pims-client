@@ -42,13 +42,13 @@ const AdminsPage = () => {
 					</Button>
 				</div>
 				<div className='rounded border shadow-md'>
-					<Table>
+					<Table className='table-auto'>
 						<TableHeader>
 							<TableRow className='bg-muted/50 '>
-								<TableHead className='w-[100px] text-muted-foreground'>ID</TableHead>
-								<TableHead className=' text-muted-foreground'>Name</TableHead>
-								<TableHead className=' text-muted-foreground'>Email</TableHead>
-								<TableHead className=' text-muted-foreground'>Actions</TableHead>
+								<TableHead className='w-[50px] text-muted-foreground'>ID</TableHead>
+								<TableHead className='w-3xs text-muted-foreground'>Name</TableHead>
+								<TableHead className='w-3xs text-muted-foreground'>Email</TableHead>
+								<TableHead className='text-muted-foreground text-end'>Actions</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>

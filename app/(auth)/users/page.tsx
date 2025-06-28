@@ -20,8 +20,16 @@ const UsersPage = () => {
 
 	useEffect(() => {
 		if (!user) return;
-		if (user?.role === "staff") return;
-		apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined)
+
+		if (user.role === "staff") return;
+
+		let apiUrl = "/users"; // Default URL
+
+		if (user.role === "admin" || user.role === "master_admin") {
+			apiUrl = "/users?roles=staff";
+		}
+
+		apiFetch<{ success: boolean; data: User[] }>(apiUrl, "GET")
 			.then((res) => {
 				setUsers(res.data);
 			})
@@ -31,16 +39,24 @@ const UsersPage = () => {
 	return (
 		<ProtectedRoute>
 			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
-				<div className='flex justify-between w-full max-xl:flex-col max-xl:gap-4 mb-4'>
+				<div
+					className={cn(
+						"flex w-full max-xl:flex-col max-xl:gap-4 mb-4",
+						user?.role === "property_custodian" ? "justify-start" : "justify-between"
+					)}>
 					<PageBreadcrumb />
-					<Button
-						className='bg-green-500 cursor-pointer hover:bg-green-600'
-						onClick={() => {
-							router.push("/users/add");
-						}}>
-						<PlusCircle className='mr-1 h-4 w-4' />
-						Create New Account
-					</Button>
+					{user?.role != "master_admin" && user?.role != "admin" ? (
+						""
+					) : (
+						<Button
+							className='bg-green-500 cursor-pointer hover:bg-green-600'
+							onClick={() => {
+								router.push("/users/add");
+							}}>
+							<PlusCircle className='mr-1 h-4 w-4' />
+							Create New Account
+						</Button>
+					)}
 				</div>
 				<div className='rounded border shadow-md'>
 					<Table className='table-auto'>

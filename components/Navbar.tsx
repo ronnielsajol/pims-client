@@ -23,7 +23,7 @@ const allNavItems = [
 	{ name: "Home", href: "/dashboard" },
 	{ name: "Properties", href: "/properties" },
 	{ name: "Property Custodians", href: "/property_custodians", roles: ["admin", "master_admin"] },
-	{ name: "Staffs", href: "/users", roles: ["admin", "master_admin"] },
+	{ name: "Staffs", href: "/users", roles: ["admin", "master_admin", "property_custodian"] },
 	{ name: "Admins", href: "/admins", roles: ["master_admin"] },
 	{ name: "Approvals", href: "/approvals", roles: ["master_admin"] },
 ];

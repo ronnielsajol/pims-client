@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 export default function AddCustodianPage() {
 	const [name, setName] = useState("");
+	const [department, setDepartment] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const { user } = useAuth();
@@ -27,7 +28,7 @@ export default function AddCustodianPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "property_custodian" });
+			await apiFetch("/auth/sign-up", "POST", { name, email, password, department, role: "property_custodian" });
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");
@@ -37,7 +38,9 @@ export default function AddCustodianPage() {
 		} catch (err: unknown) {
 			const error = err as ApiError;
 			console.error("API Error:", error.message || error.error);
-			alert(error.message || "Something went wrong");
+			toast.error(error.message || "Failed to create account", { id: toastId });
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -76,6 +79,18 @@ export default function AddCustodianPage() {
 										autoComplete='name'
 										onChange={(e) => {
 											setName(e.target.value);
+										}}
+									/>
+								</div>
+								<div className='space-y-2'>
+									<Label htmlFor='department'>Department</Label>
+									<Input
+										value={department}
+										required
+										id='department'
+										placeholder="Enter custodian's department"
+										onChange={(e) => {
+											setDepartment(e.target.value);
 										}}
 									/>
 								</div>

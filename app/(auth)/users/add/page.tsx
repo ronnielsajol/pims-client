@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 export default function AddStaffPage() {
 	const [name, setName] = useState("");
+	const [department, setDepartment] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const { user } = useAuth();
@@ -27,7 +28,7 @@ export default function AddStaffPage() {
 		setLoading(true);
 
 		try {
-			await apiFetch("/auth/sign-up", "POST", { name, email, password, role: "staff" });
+			await apiFetch("/auth/sign-up", "POST", { name, department, email, password, role: "staff" });
 			toast.success("Account creation successful!", { id: toastId });
 
 			setName("");
@@ -36,7 +37,10 @@ export default function AddStaffPage() {
 			router.push("/users");
 		} catch (err: unknown) {
 			const error = err as ApiError;
+			toast.error(error.message || "Failed to create account", { id: toastId });
 			console.error("API Error:", error.message || error.error);
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -75,6 +79,18 @@ export default function AddStaffPage() {
 										autoComplete='name'
 										onChange={(e) => {
 											setName(e.target.value);
+										}}
+									/>
+								</div>
+								<div className='space-y-2'>
+									<Label htmlFor='department'>Department</Label>
+									<Input
+										value={department}
+										required
+										id='department'
+										placeholder="Enter staff's department"
+										onChange={(e) => {
+											setDepartment(e.target.value);
 										}}
 									/>
 								</div>
