@@ -186,7 +186,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 	};
 
 	return (
-		<Table className='overflow-hidden '>
+		<Table className='w-full table-fixed'>
 			<PropertyTableHeader userRole={userRole} />
 			<PropertyTableBody
 				properties={properties}
