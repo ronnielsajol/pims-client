@@ -1,11 +1,12 @@
 "use client";
-import { Table } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { ApiError, Property, User } from "@/types";
 import { useRef, useState, Dispatch, SetStateAction, useMemo } from "react";
 import { toast } from "sonner";
 import { apiFetch, apiFetchWithStatus } from "@/lib/api";
 import PropertyTableHeader from "./PropertyTableHeader";
 import PropertyTableBody from "./PropertyTableBody";
+import { LoaderCircle } from "lucide-react";
 
 interface PropertyTableState {
 	user: User | null;
@@ -14,6 +15,7 @@ interface PropertyTableState {
 	addMode: boolean;
 	setAddMode: (mode: boolean) => void;
 	fetchProperties: () => Promise<void>;
+	isLoading?: boolean;
 }
 
 export default function PropertyTable({ state }: { state: PropertyTableState }) {
@@ -186,43 +188,56 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 	};
 
 	return (
-		<Table className='w-full table-fixed'>
+		<Table className='w-full table-auto'>
 			<PropertyTableHeader userRole={userRole} />
-			<PropertyTableBody
-				properties={properties}
-				users={users}
-				userRole={userRole}
-				fetchProperties={fetchProperties}
-				addMode={addMode}
-				setAddMode={setAddMode as Dispatch<SetStateAction<boolean>>} // Cast to satisfy PropertyTableBodyProps
-				selectedUser={selectedUser}
-				setSelectedUser={setSelectedUser}
-				assignMode={assignMode}
-				setAssignMode={setAssignMode}
-				openDialog={openDialog}
-				setOpenDialog={setOpenDialog}
-				openUserSelect={openUserSelect}
-				setOpenUserSelect={setOpenUserSelect}
-				pendingReassign={pendingReassign}
-				setPendingReassign={setPendingReassign}
-				newProperty={newProperty}
-				setNewProperty={setNewProperty}
-				addLoading={addLoading}
-				setAddLoading={setAddLoading}
-				deleteLoading={deleteLoading}
-				editMode={editMode}
-				setEditMode={setEditMode}
-				editValues={editValues}
-				setEditValues={setEditValues}
-				handleAssign={handleAssign as (propertyId: number, overrideConfirm?: boolean | undefined) => Promise<void>} // Cast to satisfy PropertyTableBodyProps
-				handleSaveEdit={handleSaveEdit}
-				handleDelete={handleDelete}
-				addRowRef={addRowRef}
-				allAvailableLocations={allAvailableLocations}
-				handleLocationUpdate={handleLocationUpdate}
-				handleCreatePrintJob={handleCreatePrintJob}
-				printingId={printingId}
-			/>
+			{state.isLoading ? (
+				<TableBody>
+					<TableRow>
+						{/* The single cell spans all visible columns */}
+						<TableCell colSpan={9} className='h-64 text-center'>
+							<div className='flex justify-center items-center'>
+								<LoaderCircle className='w-10 h-10 animate-spin text-muted-foreground' />
+							</div>
+						</TableCell>
+					</TableRow>
+				</TableBody>
+			) : (
+				<PropertyTableBody
+					properties={properties}
+					users={users}
+					userRole={userRole}
+					fetchProperties={fetchProperties}
+					addMode={addMode}
+					setAddMode={setAddMode as Dispatch<SetStateAction<boolean>>} // Cast to satisfy PropertyTableBodyProps
+					selectedUser={selectedUser}
+					setSelectedUser={setSelectedUser}
+					assignMode={assignMode}
+					setAssignMode={setAssignMode}
+					openDialog={openDialog}
+					setOpenDialog={setOpenDialog}
+					openUserSelect={openUserSelect}
+					setOpenUserSelect={setOpenUserSelect}
+					pendingReassign={pendingReassign}
+					setPendingReassign={setPendingReassign}
+					newProperty={newProperty}
+					setNewProperty={setNewProperty}
+					addLoading={addLoading}
+					setAddLoading={setAddLoading}
+					deleteLoading={deleteLoading}
+					editMode={editMode}
+					setEditMode={setEditMode}
+					editValues={editValues}
+					setEditValues={setEditValues}
+					handleAssign={handleAssign as (propertyId: number, overrideConfirm?: boolean | undefined) => Promise<void>} // Cast to satisfy PropertyTableBodyProps
+					handleSaveEdit={handleSaveEdit}
+					handleDelete={handleDelete}
+					addRowRef={addRowRef}
+					allAvailableLocations={allAvailableLocations}
+					handleLocationUpdate={handleLocationUpdate}
+					handleCreatePrintJob={handleCreatePrintJob}
+					printingId={printingId}
+				/>
+			)}
 		</Table>
 	);
 }

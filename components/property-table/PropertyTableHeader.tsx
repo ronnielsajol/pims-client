@@ -24,7 +24,7 @@ const defaultColumnDefinitions: ColumnDefinition[] = [
 	{
 		key: "description",
 		label: "Description",
-		className: "w-1/12 text-muted-foreground",
+		className: "w-auto text-muted-foreground",
 		isVisible: () => true,
 	},
 	{
