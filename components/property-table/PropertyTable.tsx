@@ -7,6 +7,7 @@ import { apiFetch, apiFetchWithStatus } from "@/lib/api";
 import PropertyTableHeader from "./PropertyTableHeader";
 import PropertyTableBody from "./PropertyTableBody";
 import { LoaderCircle } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 
 interface PropertyTableState {
 	user: User | null;
@@ -17,6 +18,35 @@ interface PropertyTableState {
 	fetchProperties: () => Promise<void>;
 	isLoading?: boolean;
 }
+
+interface ColumnDefinition {
+	key: string;
+	label: string;
+	className?: string;
+	isVisible: (userRole?: string) => boolean;
+}
+
+const columnDefinitions: ColumnDefinition[] = [
+	{ key: "id", label: "ID", className: "w-[50px]", isVisible: () => true },
+	{ key: "productNumber", label: "Product Number", className: "w-1/12", isVisible: () => true },
+	{ key: "description", label: "Description", className: "w-1/12", isVisible: () => true },
+	{ key: "quantity", label: "Quantity", className: "w-1/12", isVisible: () => true },
+	{ key: "value", label: "Value", className: "w-1/12", isVisible: () => true },
+	{ key: "serialNumber", label: "Serial Number", className: "w-1/8", isVisible: () => true },
+	{
+		key: "assignedTo",
+		label: "Assigned To",
+		isVisible: (role) => ["admin", "master_admin", "property_custodian"].includes(role ?? ""),
+	},
+	{ key: "department", label: "Department", isVisible: (role) => !["staff", "property_custodian"].includes(role ?? "") },
+	{ key: "location", label: "Location", isVisible: (role) => role === "property_custodian" },
+	{
+		key: "actions",
+		label: "Actions",
+		className: "w-[120px]",
+		isVisible: (role) => ["admin", "master_admin", "property_custodian"].includes(role ?? ""),
+	},
+];
 
 export default function PropertyTable({ state }: { state: PropertyTableState }) {
 	const { user, properties, users, fetchProperties, addMode, setAddMode } = state;
@@ -187,20 +217,36 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		}
 	};
 
+	const visibleColumns = useMemo(() => columnDefinitions.filter((col) => col.isVisible(userRole)), [userRole]);
+
+	const SkeletonRow = () => (
+		<TableRow>
+			{visibleColumns.map((col) => (
+				<TableCell key={col.key}>
+					<Skeleton className='h-5 w-full rounded-md' />
+				</TableCell>
+			))}
+		</TableRow>
+	);
+
 	return (
 		<Table className='w-full table-auto'>
 			<PropertyTableHeader userRole={userRole} />
 			{state.isLoading ? (
-				<TableBody>
-					<TableRow>
-						{/* The single cell spans all visible columns */}
-						<TableCell colSpan={9} className='h-64 text-center'>
-							<div className='flex justify-center items-center'>
-								<LoaderCircle className='w-10 h-10 animate-spin text-muted-foreground' />
-							</div>
-						</TableCell>
-					</TableRow>
-				</TableBody>
+				<>
+					<TableBody>
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+						<SkeletonRow />
+					</TableBody>
+				</>
 			) : (
 				<PropertyTableBody
 					properties={properties}
