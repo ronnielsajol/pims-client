@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { apiFetch, apiFetchWithStatus } from "@/lib/api";
 import PropertyTableHeader from "./PropertyTableHeader";
 import PropertyTableBody from "./PropertyTableBody";
-import { LoaderCircle } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 
 interface PropertyTableState {
