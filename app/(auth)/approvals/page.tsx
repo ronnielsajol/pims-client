@@ -9,7 +9,6 @@ import { apiFetch } from "@/lib/api"; // Your API fetch utilities
 import { ApiError, User, Property } from "@/types"; // Your custom types
 import { useAuth } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { usePendingApprovals } from "@/context/PendingApprovalsCount";
 import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 
 // Define the shape of the data we expect from the API
@@ -27,7 +26,6 @@ export default function ApprovalsPage() {
 	const { user } = useAuth();
 	const [requests, setRequests] = useState<ReassignmentRequest[]>([]);
 	const [error, setError] = useState<string | null>(null);
-	const { fetchPendingCount } = usePendingApprovals();
 
 	// Function to fetch pending requests from the backend
 	const fetchPendingRequests = async () => {
@@ -60,7 +58,6 @@ export default function ApprovalsPage() {
 
 			// Remove the processed request from the UI for instant feedback
 			setRequests((prevRequests) => prevRequests.filter((req) => req.requestId !== requestId));
-			await fetchPendingCount();
 		} catch (err) {
 			const errorMessage = (err as ApiError).message || "An unknown error occurred.";
 			toast.error(errorMessage, { id: toastId });
