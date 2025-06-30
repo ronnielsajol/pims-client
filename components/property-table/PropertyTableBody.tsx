@@ -1,6 +1,6 @@
 // components/property-table/PropertyTableBody.tsx
 "use client";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "motion/react";
 import { TableBody, TableCell } from "@/components/ui/table";
 
 import { Property, User } from "@/types";
@@ -17,10 +17,10 @@ export interface PropertyTableBodyProps {
 	properties: Property[];
 	users: User[];
 	userRole: string | undefined;
-	fetchProperties: () => Promise<void>;
 	addMode: boolean;
 	setAddMode: Dispatch<SetStateAction<boolean>>;
 
+	// UI State and Setters from parent
 	selectedUser: { [propertyId: number]: string };
 	setSelectedUser: Dispatch<SetStateAction<{ [propertyId: number]: string }>>;
 	assignMode: { [propertyId: number]: boolean };
@@ -31,53 +31,38 @@ export interface PropertyTableBodyProps {
 	setOpenUserSelect: Dispatch<SetStateAction<{ [propertyId: number]: boolean }>>;
 	pendingReassign: { propertyId: number; newUserId: string } | null;
 	setPendingReassign: Dispatch<SetStateAction<{ propertyId: number; newUserId: string } | null>>;
-
 	newProperty: { propertyNo: string; description: string; quantity: string; value: string; serialNo: string };
 	setNewProperty: Dispatch<
 		SetStateAction<{ propertyNo: string; description: string; quantity: string; value: string; serialNo: string }>
 	>;
-	addLoading: boolean;
-	setAddLoading: Dispatch<SetStateAction<boolean>>;
-	deleteLoading: boolean;
 	editMode: { [propertyId: number]: boolean };
 	setEditMode: Dispatch<SetStateAction<{ [propertyId: number]: boolean }>>;
-	editValues: {
-		[propertyId: number]: {
-			propertyNo: string;
-			description: string;
-			quantity: string;
-			value: string;
-			serialNo: string;
-			location_detail?: string;
-		};
-	};
-	setEditValues: Dispatch<
-		SetStateAction<{
-			[propertyId: number]: {
-				propertyNo: string;
-				description: string;
-				quantity: string;
-				value: string;
-				serialNo: string;
-				location_detail?: string;
-			};
-		}>
-	>;
-	handleAssign: (propertyId: number, overrideConfirm?: boolean) => Promise<void>;
-	handleSaveEdit: (propertyId: number) => Promise<void>;
-	handleDelete: (propertyId: number, confirmed: boolean) => Promise<void>;
+	editValues: { [propertyId: number]: Partial<Property> };
+	setEditValues: Dispatch<SetStateAction<{ [propertyId: number]: Partial<Property> }>>;
 	addRowRef: RefObject<HTMLTableRowElement | null>;
 	allAvailableLocations: string[];
+
+	// Handlers from parent (which now wrap mutations)
+	handleAssign: (propertyId: number, overrideConfirm?: boolean) => void;
+	handleSaveEdit: (propertyId: number, values: Partial<Property>) => void;
+	handleDelete: (propertyId: number, confirmed: boolean) => void;
+	handleSaveNewProperty: () => void;
 	handleLocationUpdate: (propertyId: number, newLocation: string) => Promise<void>;
-	handleCreatePrintJob: (propertyId: number) => Promise<void>;
-	printingId: number | null;
+	handleCreatePrintJob: (propertyId: number) => void;
+
+	// Loading states from parent's mutations
+	isAssigning: boolean;
+	isUpdating: boolean;
+	isDeleting: boolean;
+	isAdding: boolean;
+	isUpdatingLocation: boolean;
+	isCreatingPrintJob: boolean;
 }
 
 export default function PropertyTableBody({
 	properties,
 	users,
 	userRole,
-	fetchProperties,
 	addMode,
 	setAddMode,
 	selectedUser,
@@ -92,9 +77,6 @@ export default function PropertyTableBody({
 	setPendingReassign,
 	newProperty,
 	setNewProperty,
-	addLoading,
-	setAddLoading,
-	deleteLoading,
 	editMode,
 	setEditMode,
 	editValues,
@@ -102,11 +84,18 @@ export default function PropertyTableBody({
 	handleAssign,
 	handleSaveEdit,
 	handleDelete,
+	handleSaveNewProperty,
 	addRowRef,
 	allAvailableLocations,
 	handleLocationUpdate,
 	handleCreatePrintJob,
-	printingId,
+
+	isAssigning,
+	isUpdating,
+	isDeleting,
+	isAdding,
+	isUpdatingLocation, // eslint-disable-line @typescript-eslint/no-unused-vars
+	isCreatingPrintJob,
 }: PropertyTableBodyProps) {
 	useEffect(() => {
 		if (addMode && addRowRef.current) {
@@ -138,126 +127,124 @@ export default function PropertyTableBody({
 		};
 	};
 	return (
-		<TableBody className='transition-[height] duration-700 ease-out'>
-			<AnimatePresence>
-				{properties.map((p) => (
-					<motion.tr
-						className='hover:bg-muted/50'
-						key={p.id}
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.3 }}>
-						<TableCell className='font-medium pl-4'>{p.id}</TableCell>
+		<TableBody className=''>
+			{properties.map((p) => (
+				<motion.tr
+					layout
+					className='hover:bg-muted/50'
+					key={p.id}
+					transition={{ duration: 0.3 }}
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}>
+					<TableCell className='font-medium pl-4'>{p.id}</TableCell>
 
-						<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
-							<EditableTextCell {...getEditableCellProps(p, "propertyNo")} />
-						</TableCell>
-						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
-							<EditableTextCell {...getEditableCellProps(p, "description")} />
-						</TableCell>
-						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
-							<EditableTextCell {...getEditableCellProps(p, "quantity")} />
-						</TableCell>
-						<TableCell className={cn("", editMode[p.id] && "pl-2")}>
-							<EditableTextCell {...getEditableCellProps(p, "value")} />
-						</TableCell>
-						<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
-							<EditableTextCell {...getEditableCellProps(p, "serialNo")} />
-						</TableCell>
+					<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+						<EditableTextCell {...getEditableCellProps(p, "propertyNo")} />
+					</TableCell>
+					<TableCell className={cn("", editMode[p.id] && "pl-2")}>
+						<EditableTextCell {...getEditableCellProps(p, "description")} />
+					</TableCell>
+					<TableCell className={cn("", editMode[p.id] && "pl-2")}>
+						<EditableTextCell {...getEditableCellProps(p, "quantity")} />
+					</TableCell>
+					<TableCell className={cn("", editMode[p.id] && "pl-2")}>
+						<EditableTextCell {...getEditableCellProps(p, "value")} />
+					</TableCell>
+					<TableCell className={cn("font-medium", editMode[p.id] && "pl-2")}>
+						<EditableTextCell {...getEditableCellProps(p, "serialNo")} />
+					</TableCell>
 
-						{/* Assigned To Cell - Conditional rendering based on role */}
-						{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
-							<TableCell>
-								<UserSelectionCell
-									userRole={userRole}
-									property={p}
-									isAssignMode={assignMode[p.id]}
-									users={users}
-									isUserSelectPopoverOpen={openUserSelect[p.id]}
-									onUserSelectPopoverOpenChange={(isOpen) => setOpenUserSelect((prev) => ({ ...prev, [p.id]: isOpen }))}
-									selectedUserIdInPopover={selectedUser[p.id]}
-									onSelectUserInPopover={(userId) => setSelectedUser((prev) => ({ ...prev, [p.id]: userId }))}
-									onSetAssignMode={() => setAssignMode((prev) => ({ ...prev, [p.id]: true }))}
-									isReassignDialogOpen={openDialog === p.id}
-									onReassignDialogClose={() => setOpenDialog(null)}
-									pendingReassignForDialog={pendingReassign}
-									onReassignDialogConfirm={() => {
-										if (pendingReassign && pendingReassign.propertyId === p.id) {
-											setSelectedUser((prev) => ({ ...prev, [p.id]: pendingReassign.newUserId }));
-											handleAssign(p.id, true);
-											setPendingReassign(null);
-										}
-										setOpenDialog(null);
-									}}
-									onReassignDialogCancel={() => {
-										setPendingReassign(null);
-										setOpenDialog(null);
-									}}
-								/>
-							</TableCell>
-						)}
-						{/* Department Cell - Conditional rendering based on role */}
-						{(userRole === "admin" || userRole === "master_admin") && (
-							<TableCell>
-								{p.assignedDepartment ? (
-									<Badge variant={"outline"} className='font-normal py-1 px-4 rounded-3xl bg-blue-100 text-blue-800 border-transparent'>
-										{p.assignedDepartment}
-									</Badge>
-								) : (
-									""
-								)}
-							</TableCell>
-						)}
-
-						{/* Location Cell - Only for property_custodian */}
-						{userRole === "property_custodian" && (
-							<TableCell>
-								<LocationSelectionCell
-									propertyId={p.id}
-									currentLocation={p.location_detail}
-									allAvailableLocations={allAvailableLocations}
-									onUpdateLocation={handleLocationUpdate}
-								/>
-							</TableCell>
-						)}
-
-						{/* Actions Cell - Conditional rendering based on role */}
-						{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
-							<PropertyTableActionsCell
-								property={p}
-								users={users}
+					{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
+						<TableCell>
+							<UserSelectionCell
 								userRole={userRole}
-								deleteLoading={deleteLoading}
-								editMode={editMode}
-								setEditMode={setEditMode}
-								editValues={editValues}
-								setEditValues={setEditValues}
-								assignMode={assignMode}
-								setAssignMode={setAssignMode}
-								selectedUser={selectedUser}
-								setSelectedUser={setSelectedUser}
-								handleSaveEdit={handleSaveEdit}
-								handleDelete={handleDelete}
-								handleAssign={handleAssign}
-								handleCreatePrintJob={handleCreatePrintJob}
-								printingId={printingId}
+								property={p}
+								isAssignMode={assignMode[p.id]}
+								users={users}
+								isUserSelectPopoverOpen={openUserSelect[p.id]}
+								onUserSelectPopoverOpenChange={(isOpen) => setOpenUserSelect((prev) => ({ ...prev, [p.id]: isOpen }))}
+								selectedUserIdInPopover={selectedUser[p.id]}
+								onSelectUserInPopover={(userId) => setSelectedUser((prev) => ({ ...prev, [p.id]: userId }))}
+								onSetAssignMode={() => setAssignMode((prev) => ({ ...prev, [p.id]: true }))}
+								isReassignDialogOpen={openDialog === p.id}
+								onReassignDialogClose={() => setOpenDialog(null)}
+								pendingReassignForDialog={pendingReassign}
+								onReassignDialogConfirm={() => {
+									if (pendingReassign && pendingReassign.propertyId === p.id) {
+										setSelectedUser((prev) => ({ ...prev, [p.id]: pendingReassign.newUserId }));
+										handleAssign(p.id, true);
+										setPendingReassign(null);
+									}
+									setOpenDialog(null);
+								}}
+								onReassignDialogCancel={() => {
+									setPendingReassign(null);
+									setOpenDialog(null);
+								}}
 							/>
-						)}
-						{/* Render empty cell for staff for actions to maintain column alignment if "Actions" column header is present */}
-					</motion.tr>
-				))}
-				<PropertyTableAddRow
-					addMode={addMode}
-					newProperty={newProperty}
-					setNewProperty={setNewProperty}
-					addLoading={addLoading}
-					setAddLoading={setAddLoading}
-					setAddMode={setAddMode}
-					fetchProperties={fetchProperties}
-					addRowRef={addRowRef}
-				/>
-			</AnimatePresence>
+						</TableCell>
+					)}
+					{/* Department Cell - Conditional rendering based on role */}
+					{(userRole === "admin" || userRole === "master_admin") && (
+						<TableCell>
+							{p.assignedDepartment ? (
+								<Badge variant={"outline"} className='font-normal py-1 px-4 rounded-3xl bg-blue-100 text-blue-800 border-transparent'>
+									{p.assignedDepartment}
+								</Badge>
+							) : (
+								""
+							)}
+						</TableCell>
+					)}
+
+					{/* Location Cell - Only for property_custodian */}
+					{userRole === "property_custodian" && (
+						<TableCell>
+							<LocationSelectionCell
+								propertyId={p.id}
+								currentLocation={p.location_detail}
+								allAvailableLocations={allAvailableLocations}
+								onUpdateLocation={handleLocationUpdate}
+							/>
+						</TableCell>
+					)}
+
+					{/* Actions Cell - Conditional rendering based on role */}
+					{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
+						<PropertyTableActionsCell
+							property={p}
+							users={users}
+							userRole={userRole}
+							editMode={editMode}
+							setEditMode={setEditMode}
+							editValues={editValues[p.id]}
+							setEditValues={(newValues) => setEditValues((prev) => ({ ...prev, [p.id]: newValues }))}
+							assignMode={assignMode}
+							setAssignMode={setAssignMode}
+							selectedUser={selectedUser}
+							setSelectedUser={setSelectedUser}
+							handleSaveEdit={() => handleSaveEdit(p.id, editValues[p.id] || {})}
+							handleDelete={() => handleDelete(p.id, false)}
+							handleAssign={() => handleAssign(p.id)}
+							handleCreatePrintJob={() => handleCreatePrintJob(p.id)}
+							deleteLoading={isDeleting}
+							isUpdating={isUpdating}
+							isAssigning={isAssigning}
+							isCreatingPrintJob={isCreatingPrintJob}
+						/>
+					)}
+					{/* Render empty cell for staff for actions to maintain column alignment if "Actions" column header is present */}
+				</motion.tr>
+			))}
+			<PropertyTableAddRow
+				addMode={addMode}
+				newProperty={newProperty}
+				setNewProperty={setNewProperty}
+				addLoading={isAdding}
+				handleSaveNewProperty={handleSaveNewProperty}
+				setAddMode={setAddMode}
+				addRowRef={addRowRef}
+			/>
 		</TableBody>
 	);
 }
