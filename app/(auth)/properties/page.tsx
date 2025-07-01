@@ -1,9 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { apiFetch, apiFetchFile } from "@/lib/api";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
-import { Property, User } from "@/types";
+import { Property } from "@/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PropertyTable from "@/components/property-table/PropertyTable";
@@ -12,11 +12,14 @@ import { PageBreadcrumb } from "@/components/PageBreadCrumb";
 import {
 	Pagination,
 	PaginationContent,
+	PaginationEllipsis,
 	PaginationItem,
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useQuery } from "@tanstack/react-query";
+
 interface PaginatedResponse {
 	success: boolean;
 	data: Property[];
@@ -30,52 +33,25 @@ interface PaginatedResponse {
 
 export default function PropertiesPage() {
 	const { user } = useAuth();
-	const [properties, setProperties] = useState<Property[]>([]);
-	const [users, setUsers] = useState<User[]>([]);
+
 	const [addMode, setAddMode] = useState(false);
 	const [isGenerating, setIsGenerating] = useState(false);
-
 	const [currentPage, setCurrentPage] = useState(1);
-	const [pageCount, setPageCount] = useState(0);
-	const [isLoading, setIsLoading] = useState(true);
 
-	const fetchProperties = async (page: number) => {
-		if (!user) return;
-		setIsLoading(true);
+	const {
+		status,
+		data: propertiesResponse,
+		isLoading: isLoadingProperties,
+	} = useQuery({
+		queryKey: ["properties", currentPage],
+		queryFn: async () => {
+			console.log("Status: ", status);
+			const res = await apiFetch<PaginatedResponse>(`/properties?page=${currentPage}&pageSize=10`);
+			return res;
+		},
+	});
 
-		try {
-			// Fetch assigned properties
-			const propsRes = await apiFetch<PaginatedResponse>(`/properties?page=${page}&pageSize=10`);
-			setProperties(propsRes.data);
-			setPageCount(propsRes.meta.pageCount);
-			setCurrentPage(propsRes.meta.page);
-
-			// Fetch users depending on role
-			if (user.role === "property_custodian") {
-				// Custodian sees staff
-				const usersRes = await apiFetch<{ success: boolean; data: User[] }>("/users?roles=staff", "GET", undefined);
-				setUsers(usersRes.data);
-			} else if (user.role === "admin" || user.role === "master_admin") {
-				// Admins see custodians
-				const usersRes = await apiFetch<{ success: boolean; data: User[] }>(
-					"/users?roles=property_custodian",
-					"GET",
-					undefined
-				);
-				setUsers(usersRes.data);
-			}
-		} catch (error) {
-			console.error("Failed to fetch properties or users:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		if (user) {
-			fetchProperties(currentPage);
-		}
-	}, [user, currentPage]);
+	const pageCount = propertiesResponse?.meta.pageCount || 0;
 
 	const handlePageChange = (newPage: number) => {
 		if (newPage >= 1 && newPage <= pageCount) {
@@ -108,15 +84,99 @@ export default function PropertiesPage() {
 		}
 	};
 
-	const propertyTableState = {
-		user,
-		properties,
-		users,
-		addMode,
-		setAddMode,
-		fetchProperties: () => fetchProperties(currentPage),
-		isLoading,
+	const renderPaginationItems = () => {
+		const items = [];
+		const siblingCount = 1; // How many pages to show on each side of the current page
+		const totalPageNumbers = siblingCount + 5; // The total numbers to show with ellipsis
+
+		// Always show first page
+		items.push(
+			<PaginationItem key={1}>
+				<PaginationLink
+					href='#'
+					onClick={(e) => {
+						e.preventDefault();
+						handlePageChange(1);
+					}}
+					isActive={currentPage === 1}>
+					1
+				</PaginationLink>
+			</PaginationItem>
+		);
+
+		if (pageCount > totalPageNumbers) {
+			const startPage = Math.max(2, currentPage - siblingCount);
+			const endPage = Math.min(pageCount - 1, currentPage + siblingCount);
+
+			if (startPage > 2) {
+				items.push(
+					<PaginationItem key='start-ellipsis'>
+						<PaginationEllipsis />
+					</PaginationItem>
+				);
+			}
+
+			for (let i = startPage; i <= endPage; i++) {
+				items.push(
+					<PaginationItem key={i}>
+						<PaginationLink
+							href='#'
+							onClick={(e) => {
+								e.preventDefault();
+								handlePageChange(i);
+							}}
+							isActive={currentPage === i}>
+							{i}
+						</PaginationLink>
+					</PaginationItem>
+				);
+			}
+
+			if (endPage < pageCount - 1) {
+				items.push(
+					<PaginationItem key='end-ellipsis'>
+						<PaginationEllipsis />
+					</PaginationItem>
+				);
+			}
+		} else {
+			for (let i = 2; i < pageCount; i++) {
+				items.push(
+					<PaginationItem key={i}>
+						<PaginationLink
+							href='#'
+							onClick={(e) => {
+								e.preventDefault();
+								handlePageChange(i);
+							}}
+							isActive={currentPage === i}>
+							{i}
+						</PaginationLink>
+					</PaginationItem>
+				);
+			}
+		}
+
+		// Always show last page if more than 1 page
+		if (pageCount > 1) {
+			items.push(
+				<PaginationItem key={pageCount}>
+					<PaginationLink
+						href='#'
+						onClick={(e) => {
+							e.preventDefault();
+							handlePageChange(pageCount);
+						}}
+						isActive={currentPage === pageCount}>
+						{pageCount}
+					</PaginationLink>
+				</PaginationItem>
+			);
+		}
+
+		return items;
 	};
+
 	return (
 		<ProtectedRoute>
 			<div className='max-xl:p-0.5 laptop:p-5 desktop:p-8 w-full'>
@@ -151,7 +211,7 @@ export default function PropertiesPage() {
 				</div>
 				<div className=''>
 					<div className='rounded border shadow-md'>
-						<PropertyTable state={propertyTableState} />
+						<PropertyTable currentPage={currentPage} addMode={addMode} setAddMode={setAddMode} />
 					</div>
 
 					<div className='w-full flex justify-start max-xl:justify-center'>
@@ -162,36 +222,24 @@ export default function PropertiesPage() {
 										<PaginationItem>
 											<PaginationPrevious
 												href='#'
-												onClick={(e: React.MouseEvent) => {
+												onClick={(e) => {
 													e.preventDefault();
 													handlePageChange(currentPage - 1);
 												}}
-												className={currentPage === 1 ? "pointer-events-none opacity-50" : undefined}
+												className={currentPage === 1 || isLoadingProperties ? "pointer-events-none opacity-50" : undefined}
 											/>
 										</PaginationItem>
 
-										{Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNumber) => (
-											<PaginationItem key={pageNumber}>
-												<PaginationLink
-													href='#'
-													onClick={(e: React.MouseEvent) => {
-														e.preventDefault();
-														handlePageChange(pageNumber);
-													}}
-													isActive={pageNumber === currentPage}>
-													{pageNumber}
-												</PaginationLink>
-											</PaginationItem>
-										))}
+										{renderPaginationItems()}
 
 										<PaginationItem>
 											<PaginationNext
 												href='#'
-												onClick={(e: React.MouseEvent) => {
+												onClick={(e) => {
 													e.preventDefault();
 													handlePageChange(currentPage + 1);
 												}}
-												className={currentPage === pageCount ? "pointer-events-none opacity-50" : undefined}
+												className={currentPage === pageCount || isLoadingProperties ? "pointer-events-none opacity-50" : undefined}
 											/>
 										</PaginationItem>
 									</PaginationContent>

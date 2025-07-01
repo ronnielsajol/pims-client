@@ -1,11 +1,9 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Dispatch, SetStateAction, RefObject } from "react";
-import { toast } from "sonner";
-import { apiFetch } from "@/lib/api";
-import { ApiError } from "@/types";
+import { LoaderCircle } from "lucide-react";
 
 interface PropertyTableAddRowProps {
 	addMode: boolean;
@@ -14,9 +12,8 @@ interface PropertyTableAddRowProps {
 		SetStateAction<{ propertyNo: string; description: string; quantity: string; value: string; serialNo: string }>
 	>;
 	addLoading: boolean;
-	setAddLoading: Dispatch<SetStateAction<boolean>>;
+	handleSaveNewProperty: () => void; // Use the handler from parent
 	setAddMode: Dispatch<SetStateAction<boolean>>;
-	fetchProperties: () => Promise<void>;
 	addRowRef: RefObject<HTMLTableRowElement | null>;
 }
 
@@ -25,35 +22,12 @@ export default function PropertyTableAddRow({
 	newProperty,
 	setNewProperty,
 	addLoading,
-	setAddLoading,
+	handleSaveNewProperty, // Use the handler from parent instead of implementing it here
 	setAddMode,
-	fetchProperties,
 	addRowRef,
 }: PropertyTableAddRowProps) {
-	const handleSaveNewProperty = async () => {
-		setAddLoading(true);
-		const toastId = toast.loading("Adding property...");
-		try {
-			await apiFetch("/properties/add", "POST", { property: newProperty });
-			toast.success("Property added successfully!", { id: toastId });
-			setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
-			setAddMode(false);
-			fetchProperties();
-		} catch (err) {
-			const error = err as ApiError;
-
-			if (error.status === 409) {
-				toast.error(error.message || "This property number already exists.", { id: toastId });
-			} else {
-				toast.error(error.message || "Failed to add property.", { id: toastId });
-			}
-			console.error("Add error:", err);
-		} finally {
-			setAddLoading(false);
-		}
-	};
-
 	const handleCancel = () => {
+		setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
 		setAddMode(false);
 	};
 
@@ -117,7 +91,14 @@ export default function PropertyTableAddRow({
 			<TableCell colSpan={3}>
 				<div className='flex gap-2'>
 					<Button className='bg-green-600 text-white hover:bg-green-700' disabled={addLoading} onClick={handleSaveNewProperty}>
-						{addLoading ? "Adding..." : "Save"}
+						{addLoading ? (
+							<>
+								<LoaderCircle className='animate-spin h-4 w-4 mr-2' />
+								Adding...
+							</>
+						) : (
+							"Save"
+						)}
 					</Button>
 					<Button variant='outline' onClick={handleCancel}>
 						Cancel

@@ -17,7 +17,7 @@ import {
 } from "./ui/dropdown-menu";
 import { ChevronDown, LogOut, Menu, User } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
-import { usePendingApprovals } from "@/context/PendingApprovalsCount";
+import { usePendingApprovalsCount } from "@/hooks/usePendingApprovalsCount";
 
 const allNavItems = [
 	{ name: "Home", href: "/dashboard" },
@@ -33,9 +33,12 @@ const Navbar = () => {
 	const pathName = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
-	const { pendingCount } = usePendingApprovals();
+	const { data: count, isLoading } = usePendingApprovalsCount();
 
 	const isActive = (href: string) => {
+		if (href === "/dashboard") {
+			return pathName === href;
+		}
 		return pathName.startsWith(href);
 	};
 
@@ -68,9 +71,9 @@ const Navbar = () => {
 								isActive(item.href) ? "border-b-[#800000] text-[#800000] font-semibold" : "border-b-transparent"
 							)}>
 							{item.name}
-							{item.name === "Approvals" && pendingCount > 0 && (
-								<span className='ml-1.5 font-bold text-red-600'>({pendingCount})</span>
-							)}
+							{item.name === "Approvals" && !isLoading && typeof count === "number" && count > 0 && (
+								<span className='ml-1.5 font-bold text-red-600'>{count}</span>
+							)}{" "}
 						</Link>
 					))}
 				</div>

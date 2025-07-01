@@ -7,15 +7,23 @@ import { apiFetch, apiFetchWithStatus } from "@/lib/api";
 import PropertyTableHeader from "./PropertyTableHeader";
 import PropertyTableBody from "./PropertyTableBody";
 import { Skeleton } from "../ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-interface PropertyTableState {
-	user: User | null;
-	properties: Property[];
-	users: User[];
+interface PaginatedResponse {
+	success: boolean;
+	data: Property[];
+	meta: {
+		page: number;
+		pageSize: number;
+		pageCount: number;
+		totalCount: number;
+	};
+}
+interface PropertyTableProps {
+	currentPage: number;
 	addMode: boolean;
 	setAddMode: (mode: boolean) => void;
-	fetchProperties: () => Promise<void>;
-	isLoading?: boolean;
 }
 
 interface ColumnDefinition {
@@ -47,9 +55,126 @@ const columnDefinitions: ColumnDefinition[] = [
 	},
 ];
 
-export default function PropertyTable({ state }: { state: PropertyTableState }) {
-	const { user, properties, users, fetchProperties, addMode, setAddMode } = state;
+export default function PropertyTable({ currentPage, addMode, setAddMode }: PropertyTableProps) {
+	const { user } = useAuth();
 	const userRole = user?.role;
+	const queryClient = useQueryClient();
+
+	const { data: propertiesResponse, isLoading } = useQuery({
+		queryKey: ["properties", currentPage],
+		queryFn: async () => {
+			const res = await apiFetch<PaginatedResponse>(`/properties?page=${currentPage}&pageSize=10`);
+			return res;
+		},
+		enabled: !!user,
+	});
+
+	const { data: users } = useQuery({
+		queryKey: ["usersForTable", userRole],
+		queryFn: async () => {
+			if (userRole === "property_custodian") return (await apiFetch<{ data: User[] }>("/users?roles=staff")).data;
+			if (userRole === "admin" || userRole === "master_admin")
+				return (await apiFetch<{ data: User[] }>("/users?roles=property_custodian")).data;
+			return [];
+		},
+		enabled: !!user && userRole !== "staff",
+	});
+
+	const properties = propertiesResponse?.data || [];
+
+	const onMutationSuccess = () => {
+		queryClient.invalidateQueries({ queryKey: ["properties"] });
+	};
+
+	const assignMutation = useMutation({
+		onMutate: () => toast.loading("Assigning property..."),
+		mutationFn: (variables: { propertyId: number; userId: string }) =>
+			apiFetchWithStatus("/properties/assign", "POST", { ...variables }),
+		onSuccess: (data, variables, context) => {
+			if (data.status === 202) toast.success("Reassignment request submitted!", { id: context });
+			else toast.success("Property assigned successfully!", { id: context });
+			onMutationSuccess();
+			setAssignMode((prev) => ({ ...prev, [variables.propertyId]: false }));
+			setPendingReassign(null);
+			setOpenDialog(null);
+		},
+		onError: (error: Error) => toast.error(`Assignment failed: ${error.message}`),
+	});
+
+	const updateMutation = useMutation({
+		onMutate: () => toast.loading("Updating property..."),
+		mutationFn: (variables: { propertyId: number; values: Partial<Property> }) =>
+			apiFetch(`/properties/update/${variables.propertyId}`, "PATCH", { property: variables.values }),
+		onSuccess: (data, variables, context) => {
+			toast.success("Property updated!", { id: context });
+			onMutationSuccess();
+		},
+		onError: (error: ApiError, variables, context) => toast.error(`Update failed: ${error.message}`, { id: context }),
+	});
+
+	const deleteMutation = useMutation({
+		onMutate: () => toast.loading("Deleting property..."),
+		mutationFn: (variables: { propertyId: number; confirmed: boolean }) =>
+			apiFetch(`/properties/${variables.propertyId}`, "DELETE", { confirmed: variables.confirmed }),
+		onSuccess: (data, variables, context) => {
+			toast.success("Property deleted successfully!", { id: context });
+			onMutationSuccess();
+		},
+		onError: (error: ApiError, variables, context) => toast.error(`Delete failed: ${error.message}`, { id: context }),
+	});
+
+	const addPropertyMutation = useMutation({
+		onMutate: () => toast.loading("Adding property..."),
+		mutationFn: (newPropertyData: Partial<Property>) => apiFetch("/properties/add", "POST", { property: newPropertyData }),
+		onSuccess: (data, variables, context) => {
+			toast.success("Property added successfully!", { id: context });
+			onMutationSuccess();
+			setNewProperty({ propertyNo: "", description: "", quantity: "", value: "", serialNo: "" });
+			setAddMode(false);
+		},
+		onError: (error: ApiError, variables, context) => {
+			if (error.status === 409) toast.error(error.message || "This property number already exists.", { id: context });
+			else toast.error(error.message || "Failed to add property.", { id: context });
+		},
+	});
+
+	const updateLocationMutation = useMutation({
+		onMutate: () => toast.loading("Updating location..."),
+		mutationFn: (variables: { propertyId: number; newLocation: string }) =>
+			apiFetch(`/properties/${variables.propertyId}/location-detail`, "PATCH", {
+				property: { location_detail: variables.newLocation },
+			}),
+		onSuccess: (data, variables, context) => {
+			toast.success("Location updated!", { id: context });
+			onMutationSuccess();
+		},
+		onError: (error: ApiError, variables, context) =>
+			toast.error(`Location update failed: ${error.message}`, { id: context }),
+	});
+
+	const createPrintJobMutation = useMutation({
+		onMutate: () => toast.loading("Adding to print queue..."),
+		mutationFn: (propertyId: number) => apiFetch("/print-jobs/create", "POST", { propertyId }),
+		onSuccess: (data, variables, context) => toast.success("Property successfully added to print queue!", { id: context }),
+		onError: (error: ApiError, variables, context) => {
+			if (error.status === 409) toast.error(error.message || "This property is already in the print queue.", { id: context });
+			else toast.error(error.message || "Failed to add to queue.", { id: context });
+		},
+	});
+
+	const createDisplayJobMutation = useMutation({
+		onMutate: () => toast.loading("Adding to display queue..."),
+		mutationFn: (propertyId: number) => apiFetch("/display-jobs/create", "POST", { propertyId }),
+		onSuccess: (data, variables, context) =>
+			toast.success("Property successfully added to display queue!", { id: context }),
+		onError: (error: ApiError) => {
+			if (error.status === 409) {
+				toast.error(error.message || "This property is already in the display queue.");
+			} else {
+				toast.error(error.message || "Failed to add to queue.");
+			}
+		},
+	});
 
 	const [selectedUser, setSelectedUser] = useState<{ [propertyId: number]: string }>({});
 	const [assignMode, setAssignMode] = useState<{ [propertyId: number]: boolean }>({});
@@ -63,8 +188,6 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		value: "",
 		serialNo: "",
 	});
-	const [addLoading, setAddLoading] = useState(false);
-	const [deleteLoading, setDeleteLoading] = useState(false);
 	const [editMode, setEditMode] = useState<{ [propertyId: number]: boolean }>({});
 	const [editValues, setEditValues] = useState<{
 		[propertyId: number]: {
@@ -76,7 +199,6 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 		};
 	}>({});
 	const addRowRef = useRef<HTMLTableRowElement | null>(null);
-	const [printingId, setPrintingId] = useState<number | null>(null);
 
 	const handleAssign = async (propertyId: number, overrideConfirm = false) => {
 		const userId = selectedUser[propertyId];
@@ -84,9 +206,10 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 
 		const property = properties.find((p) => p.id === propertyId);
 		const isReassigning = !!property?.assignedTo;
-		const currentlyAssignedUser = users.find((u) => u.name === property?.assignedTo);
 
+		// Check for reassignment and show dialog if needed
 		if (isReassigning && !overrideConfirm) {
+			const currentlyAssignedUser = users?.find((u) => u.name === property.assignedTo);
 			if (userId !== String(currentlyAssignedUser?.id)) {
 				setPendingReassign({ propertyId, newUserId: userId });
 				setOpenDialog(propertyId);
@@ -95,96 +218,23 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				return toast.warning("This property is already assigned to this user.");
 			}
 		}
-
-		const toastId = toast.loading(`${isReassigning ? "Submitting request" : "Assigning property"}...`);
-		try {
-			const { data, status } = await apiFetchWithStatus<{ message?: string }>("/properties/assign", "POST", {
-				userId,
-				propertyId,
-			});
-
-			if (status === 201 || status === 200) {
-				toast.success("Property assigned successfully!", { id: toastId });
-				await fetchProperties();
-			} else if (status === 202) {
-				toast.success(data.message || "Request submitted for approval!", { id: toastId });
-			}
-
-			setAssignMode((prev) => ({ ...prev, [propertyId]: false }));
-			setPendingReassign(null);
-			fetchProperties();
-		} catch (err) {
-			console.error("Assign error:", err);
-			const errorMessage = (err as ApiError).message || "Failed to complete the assignment request.";
-			toast.error(errorMessage, { id: toastId });
-		}
+		assignMutation.mutate({ propertyId, userId });
 	};
 
-	const handleSaveEdit = async (propertyId: number) => {
-		const values = editValues[propertyId];
-		if (!values?.propertyNo || !values?.description || !values?.quantity || !values?.serialNo || !values?.value) return;
-
-		const toastId = toast.loading("Updating property...");
-
-		try {
-			await apiFetch(`/properties/update/${propertyId}`, "PATCH", { property: values });
-			toast.success("Property updated!", { id: toastId });
-			setEditMode((prev) => ({ ...prev, [propertyId]: false }));
-			fetchProperties();
-		} catch (err) {
-			const error = err as ApiError;
-
-			if (error.status === 409) {
-				toast.error(error.message || "This property number already exists.", { id: toastId });
-			} else {
-				toast.error(error.message || "Failed to update property.", { id: toastId });
-			}
-		}
+	const handleSaveEdit = async (propertyId: number, values: Partial<Property>) => {
+		updateMutation.mutate({ propertyId, values });
+		setEditMode((prev) => ({ ...prev, [propertyId]: false }));
 	};
 
-	const handleDelete = async (propertyId: number, confirmed: boolean) => {
-		const toastId = toast.loading("Deleting property...");
-		setDeleteLoading(true);
-
-		try {
-			const res = await apiFetch<{ requiresConfirmation?: boolean; message?: string }>(
-				`/properties/${propertyId}`,
-				"DELETE",
-				{ confirmed }
-			);
-
-			if (res.requiresConfirmation && !confirmed) {
-				toast.warning(res.message || "This property is assigned. Confirmation is required to delete.");
-				return;
-			}
-
-			toast.success("Property deleted successfully", {
-				id: toastId,
-			});
-			await fetchProperties();
-		} catch (err) {
-			const error = err as ApiError;
-			toast.error(error.message || "Failed to delete property");
-		} finally {
-			setDeleteLoading(false);
-		}
+	const handleDelete = async (propertyId: number) => {
+		deleteMutation.mutate({ propertyId, confirmed: true });
 	};
 
+	const handleSaveNewProperty = () => {
+		addPropertyMutation.mutate(newProperty);
+	};
 	const handleLocationUpdate = async (propertyId: number, newLocation: string) => {
-		const toastId = toast.loading("Updating location...");
-		try {
-			await apiFetch(
-				`/properties/${propertyId}/location-detail`,
-				"PATCH",
-				{ property: { location_detail: newLocation } } // Ensure backend handles this field
-			);
-			toast.success("Location updated!", { id: toastId });
-			await fetchProperties(); // Refresh data
-		} catch (err) {
-			const error = err as ApiError; //
-			toast.error(error.message || "Failed to update location.", { id: toastId });
-			console.error("Location update error:", error);
-		}
+		updateLocationMutation.mutate({ propertyId, newLocation });
 	};
 
 	const allAvailableLocations = useMemo(() => {
@@ -195,25 +245,11 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 	}, [properties]);
 
 	const handleCreatePrintJob = async (propertyId: number) => {
-		setPrintingId(propertyId);
-		const toastId = toast.loading("Adding property to print queue...");
+		createPrintJobMutation.mutate(propertyId);
+	};
 
-		try {
-			await apiFetch("/print-jobs/create", "POST", { propertyId: propertyId });
-
-			toast.success("Property successfully added to print queue!", { id: toastId });
-		} catch (err) {
-			const error = err as ApiError;
-
-			if (error.status === 409) {
-				toast.error(error.message || "This property is already in the print queue.", { id: toastId });
-			} else {
-				toast.error(error.message || "Failed to add property to queue.", { id: toastId });
-			}
-			console.error("Create print job error:", err);
-		} finally {
-			setPrintingId(null);
-		}
+	const handleDisplayData = (propertyId: number) => {
+		createDisplayJobMutation.mutate(propertyId);
 	};
 
 	const visibleColumns = useMemo(() => columnDefinitions.filter((col) => col.isVisible(userRole)), [userRole]);
@@ -231,7 +267,7 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 	return (
 		<Table className='w-full table-auto'>
 			<PropertyTableHeader userRole={userRole} />
-			{state.isLoading ? (
+			{isLoading ? (
 				<>
 					<TableBody>
 						<SkeletonRow />
@@ -248,12 +284,12 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 				</>
 			) : (
 				<PropertyTableBody
+					isSendingToDisplay={createDisplayJobMutation.isPending}
 					properties={properties}
-					users={users}
+					users={users || []}
 					userRole={userRole}
-					fetchProperties={fetchProperties}
 					addMode={addMode}
-					setAddMode={setAddMode as Dispatch<SetStateAction<boolean>>} // Cast to satisfy PropertyTableBodyProps
+					setAddMode={setAddMode as Dispatch<SetStateAction<boolean>>}
 					selectedUser={selectedUser}
 					setSelectedUser={setSelectedUser}
 					assignMode={assignMode}
@@ -266,21 +302,26 @@ export default function PropertyTable({ state }: { state: PropertyTableState }) 
 					setPendingReassign={setPendingReassign}
 					newProperty={newProperty}
 					setNewProperty={setNewProperty}
-					addLoading={addLoading}
-					setAddLoading={setAddLoading}
-					deleteLoading={deleteLoading}
 					editMode={editMode}
 					setEditMode={setEditMode}
 					editValues={editValues}
-					setEditValues={setEditValues}
-					handleAssign={handleAssign as (propertyId: number, overrideConfirm?: boolean | undefined) => Promise<void>} // Cast to satisfy PropertyTableBodyProps
-					handleSaveEdit={handleSaveEdit}
-					handleDelete={handleDelete}
+					setEditValues={setEditValues as Dispatch<SetStateAction<{ [propertyId: number]: Partial<Property> }>>}
 					addRowRef={addRowRef}
 					allAvailableLocations={allAvailableLocations}
+					// Handlers
+					handleAssign={handleAssign}
+					handleSaveEdit={handleSaveEdit}
+					handleDelete={handleDelete}
 					handleLocationUpdate={handleLocationUpdate}
 					handleCreatePrintJob={handleCreatePrintJob}
-					printingId={printingId}
+					handleDisplayData={handleDisplayData}
+					handleSaveNewProperty={handleSaveNewProperty}
+					isAssigning={assignMutation.isPending}
+					isUpdating={updateMutation.isPending}
+					isDeleting={deleteMutation.isPending}
+					isAdding={addPropertyMutation.isPending}
+					isUpdatingLocation={updateLocationMutation.isPending}
+					isCreatingPrintJob={createPrintJobMutation.isPending}
 				/>
 			)}
 		</Table>

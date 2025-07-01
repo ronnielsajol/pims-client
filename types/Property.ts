@@ -31,6 +31,7 @@ export interface PropertyDetails {
 	invoiceDate: string | null;
 	invoiceNo: string | null;
 	duration: string | null;
+	modelNo: string | null;
 }
 
 export interface PropertyWithDetails extends Property {

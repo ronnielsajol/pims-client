@@ -195,6 +195,7 @@ export default function Page() {
 				poNo: editValues.details?.poNo,
 				invoiceDate: editValues.details?.invoiceDate,
 				invoiceNo: editValues.details?.invoiceNo,
+				modelNo: editValues.details?.modelNo,
 			};
 
 			await Promise.all([
@@ -321,6 +322,12 @@ export default function Page() {
 									value={displayData?.serialNo}
 									isEditing={isEditing}
 									onChange={(val) => handleInputChange("serialNo", val, false)}
+								/>
+								<EditableDetailItem
+									label='Model Number'
+									value={displayData?.details?.modelNo}
+									isEditing={isEditing}
+									onChange={(val) => handleInputChange("modelNo", val, true)}
 								/>
 								<EditableDetailItem
 									label='Duration'

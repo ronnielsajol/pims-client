@@ -27,39 +27,33 @@ interface PropertyTableActionsCellProps {
 	property: Property;
 	users: User[];
 	userRole: string | undefined;
-	deleteLoading: boolean;
 
-	// Edit mode states
-	editMode: { [propertyId: number]: boolean };
+	editMode: { [propertyId: number]: boolean }; // Changed from boolean
 	setEditMode: Dispatch<SetStateAction<{ [propertyId: number]: boolean }>>;
-	editValues: {
-		[propertyId: number]: { propertyNo: string; description: string; quantity: string; value: string; serialNo: string };
-	};
-	setEditValues: Dispatch<
-		SetStateAction<{
-			[propertyId: number]: { propertyNo: string; description: string; quantity: string; value: string; serialNo: string };
-		}>
-	>;
+	editValues: Partial<Property> | undefined;
+	setEditValues: (newValues: Partial<Property>) => void; // Added missing prop
+	assignMode: { [propertyId: number]: boolean }; // Changed from boolean
+	setAssignMode: Dispatch<SetStateAction<{ [propertyId: number]: boolean }>>; // Changed from simple function
+	selectedUser: { [propertyId: number]: string }; // Added missing prop
+	setSelectedUser: Dispatch<SetStateAction<{ [propertyId: number]: string }>>; // Added missing prop
 
-	// Assign mode states
-	assignMode: { [propertyId: number]: boolean };
-	setAssignMode: Dispatch<SetStateAction<{ [propertyId: number]: boolean }>>;
-	selectedUser: { [propertyId: number]: string };
-	setSelectedUser: Dispatch<SetStateAction<{ [propertyId: number]: string }>>;
+	handleSaveEdit: () => void;
+	handleDelete: () => void;
+	handleAssign: () => void;
+	handleCreatePrintJob: () => void;
+	handleDisplayData: () => void;
 
-	// Action handlers
-	handleSaveEdit: (propertyId: number) => Promise<void>;
-	handleDelete: (propertyId: number, confirmed: boolean) => Promise<void>;
-	handleAssign: (propertyId: number) => Promise<void>;
-	handleCreatePrintJob: (propertyId: number) => Promise<void>;
-	printingId: number | null;
+	// Loading states from parent's mutations
+	isUpdating: boolean;
+	deleteLoading: boolean; // Added missing prop (was isDeleting in parent)
+	isAssigning: boolean;
+	isCreatingPrintJob: boolean;
+	isSendingToDisplay: boolean; // <-- 2. ADDED A NEW LOADING STATE PROP
 }
-
 export default function PropertyTableActionsCell({
 	property,
 	users,
 	userRole,
-	deleteLoading,
 	editMode,
 	setEditMode,
 	editValues, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -72,7 +66,11 @@ export default function PropertyTableActionsCell({
 	handleDelete,
 	handleAssign,
 	handleCreatePrintJob,
-	printingId,
+	handleDisplayData,
+	isUpdating,
+	deleteLoading,
+	isAssigning,
+	isCreatingPrintJob,
 }: PropertyTableActionsCellProps) {
 	const p = property;
 	const router = useRouter();
@@ -89,8 +87,9 @@ export default function PropertyTableActionsCell({
 			<Button
 				variant='outline'
 				className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'
-				onClick={() => handleSaveEdit(p.id)}>
-				Save
+				onClick={() => handleSaveEdit()}
+				disabled={isUpdating}>
+				{isUpdating ? <LoaderCircle className='animate-spin h-4 w-4' /> : "Save"}
 			</Button>
 			<Button
 				variant='outline'
@@ -106,8 +105,9 @@ export default function PropertyTableActionsCell({
 			<Button
 				variant={"outline"}
 				className='border-green-200 text-green-500 hover:text-green-700 hover:bg-green-100 cursor-pointer transition-colors duration-200 ease-out'
-				onClick={() => handleAssign(p.id)}>
-				<Check strokeWidth={3} />
+				onClick={() => handleAssign()}
+				disabled={isAssigning}>
+				{isAssigning ? <LoaderCircle className='animate-spin h-4 w-4' /> : <Check strokeWidth={3} />}
 			</Button>
 			<Button
 				variant={"outline"}
@@ -142,16 +142,13 @@ export default function PropertyTableActionsCell({
 			<Button
 				variant='outline'
 				onClick={() => {
-					setEditValues((prev) => ({
-						...prev,
-						[p.id]: {
-							propertyNo: p.propertyNo,
-							description: p.description,
-							quantity: p.quantity,
-							value: p.value,
-							serialNo: p.serialNo,
-						},
-					}));
+					setEditValues({
+						propertyNo: p.propertyNo,
+						description: p.description,
+						quantity: p.quantity,
+						value: p.value,
+						serialNo: p.serialNo,
+					});
 					setEditMode((prev) => ({ ...prev, [p.id]: true }));
 				}}
 				className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
@@ -180,11 +177,10 @@ export default function PropertyTableActionsCell({
 						onClick={() => setIsDeleteDialogOpen(true)}
 						onSelect={(e) => e.preventDefault()}
 						className='text-red-500 hover:text-red-500! hover:bg-red-50 '>
-						{" "}
 						Delete
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => handleCreatePrintJob(p.id)} disabled={printingId === p.id}>
-						Print QR code
+					<DropdownMenuItem onClick={() => handleCreatePrintJob()} disabled={isCreatingPrintJob}>
+						{isCreatingPrintJob ? "Printing..." : "Print QR code"}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -204,7 +200,14 @@ export default function PropertyTableActionsCell({
 								Cancel
 							</Button>
 						</DialogClose>
-						<Button variant='destructive' className='cursor-pointer' onClick={() => handleDelete(p.id, true)}>
+						<Button
+							variant='destructive'
+							className='cursor-pointer'
+							onClick={() => {
+								handleDelete();
+								setIsDeleteDialogOpen(false);
+							}}
+							disabled={deleteLoading}>
 							{deleteLoading ? <LoaderCircle className='animate-spin h-5 w-5 mx-auto' /> : "Confirm"}
 						</Button>
 					</DialogFooter>
@@ -233,6 +236,18 @@ export default function PropertyTableActionsCell({
 		</>
 	);
 
+	const renderDeveloperActions = () => {
+		return (
+			<>
+				<Button
+					onClick={() => handleDisplayData()}
+					variant='outline'
+					className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+					Display
+				</Button>
+			</>
+		);
+	};
 	const renderActions = () => {
 		if (editMode[p.id]) {
 			return renderEditModeActions();
@@ -248,6 +263,9 @@ export default function PropertyTableActionsCell({
 
 		if (userRole === "property_custodian") {
 			return renderPropertyCustodianActions();
+		}
+		if (userRole === "developer") {
+			return renderDeveloperActions();
 		}
 
 		return null;
