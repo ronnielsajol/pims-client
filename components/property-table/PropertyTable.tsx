@@ -162,6 +162,20 @@ export default function PropertyTable({ currentPage, addMode, setAddMode }: Prop
 		},
 	});
 
+	const createDisplayJobMutation = useMutation({
+		onMutate: () => toast.loading("Adding to display queue..."),
+		mutationFn: (propertyId: number) => apiFetch("/display-jobs/create", "POST", { propertyId }),
+		onSuccess: (data, variables, context) =>
+			toast.success("Property successfully added to display queue!", { id: context }),
+		onError: (error: ApiError) => {
+			if (error.status === 409) {
+				toast.error(error.message || "This property is already in the display queue.");
+			} else {
+				toast.error(error.message || "Failed to add to queue.");
+			}
+		},
+	});
+
 	const [selectedUser, setSelectedUser] = useState<{ [propertyId: number]: string }>({});
 	const [assignMode, setAssignMode] = useState<{ [propertyId: number]: boolean }>({});
 	const [openDialog, setOpenDialog] = useState<number | null>(null);
@@ -234,6 +248,10 @@ export default function PropertyTable({ currentPage, addMode, setAddMode }: Prop
 		createPrintJobMutation.mutate(propertyId);
 	};
 
+	const handleDisplayData = (propertyId: number) => {
+		createDisplayJobMutation.mutate(propertyId);
+	};
+
 	const visibleColumns = useMemo(() => columnDefinitions.filter((col) => col.isVisible(userRole)), [userRole]);
 
 	const SkeletonRow = () => (
@@ -266,6 +284,7 @@ export default function PropertyTable({ currentPage, addMode, setAddMode }: Prop
 				</>
 			) : (
 				<PropertyTableBody
+					isSendingToDisplay={createDisplayJobMutation.isPending}
 					properties={properties}
 					users={users || []}
 					userRole={userRole}
@@ -295,6 +314,7 @@ export default function PropertyTable({ currentPage, addMode, setAddMode }: Prop
 					handleDelete={handleDelete}
 					handleLocationUpdate={handleLocationUpdate}
 					handleCreatePrintJob={handleCreatePrintJob}
+					handleDisplayData={handleDisplayData}
 					handleSaveNewProperty={handleSaveNewProperty}
 					isAssigning={assignMutation.isPending}
 					isUpdating={updateMutation.isPending}

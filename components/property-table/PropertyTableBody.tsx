@@ -49,12 +49,15 @@ export interface PropertyTableBodyProps {
 	handleSaveNewProperty: () => void;
 	handleLocationUpdate: (propertyId: number, newLocation: string) => Promise<void>;
 	handleCreatePrintJob: (propertyId: number) => void;
+	handleDisplayData: (propertyId: number) => void;
 
 	// Loading states from parent's mutations
 	isAssigning: boolean;
 	isUpdating: boolean;
 	isDeleting: boolean;
 	isAdding: boolean;
+	isSendingToDisplay: boolean;
+
 	isUpdatingLocation: boolean;
 	isCreatingPrintJob: boolean;
 }
@@ -96,6 +99,8 @@ export default function PropertyTableBody({
 	isAdding,
 	isUpdatingLocation, // eslint-disable-line @typescript-eslint/no-unused-vars
 	isCreatingPrintJob,
+	isSendingToDisplay,
+	handleDisplayData,
 }: PropertyTableBodyProps) {
 	useEffect(() => {
 		if (addMode && addRowRef.current) {
@@ -210,8 +215,12 @@ export default function PropertyTableBody({
 					)}
 
 					{/* Actions Cell - Conditional rendering based on role */}
-					{(userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian") && (
+					{(userRole === "admin" ||
+						userRole === "master_admin" ||
+						userRole === "property_custodian" ||
+						userRole === "developer") && (
 						<PropertyTableActionsCell
+							isSendingToDisplay={isSendingToDisplay}
 							property={p}
 							users={users}
 							userRole={userRole}
@@ -227,6 +236,7 @@ export default function PropertyTableBody({
 							handleDelete={() => handleDelete(p.id, false)}
 							handleAssign={() => handleAssign(p.id)}
 							handleCreatePrintJob={() => handleCreatePrintJob(p.id)}
+							handleDisplayData={() => handleDisplayData(p.id)}
 							deleteLoading={isDeleting}
 							isUpdating={isUpdating}
 							isAssigning={isAssigning}

@@ -1,4 +1,4 @@
-export type Role = "staff" | "admin" | "master_admin" | "property_custodian";
+export type Role = "staff" | "admin" | "master_admin" | "property_custodian" | "developer";
 
 export interface User {
 	id: number;

@@ -55,7 +55,7 @@ const defaultColumnDefinitions: ColumnDefinition[] = [
 		key: "department",
 		label: "Department",
 		className: "text-muted-foreground",
-		isVisible: (userRole) => userRole !== "staff" && userRole !== "property_custodian",
+		isVisible: (userRole) => userRole !== "staff" && userRole !== "property_custodian" && userRole !== "developer",
 	},
 	{
 		key: "location",
@@ -67,7 +67,8 @@ const defaultColumnDefinitions: ColumnDefinition[] = [
 		key: "actions",
 		label: "Actions",
 		className: "text-right pr-4 text-muted-foreground",
-		isVisible: (userRole) => userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian",
+		isVisible: (userRole) =>
+			userRole === "admin" || userRole === "master_admin" || userRole === "property_custodian" || userRole === "developer",
 	},
 ];
 

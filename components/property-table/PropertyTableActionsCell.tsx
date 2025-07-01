@@ -41,12 +41,14 @@ interface PropertyTableActionsCellProps {
 	handleDelete: () => void;
 	handleAssign: () => void;
 	handleCreatePrintJob: () => void;
+	handleDisplayData: () => void;
 
 	// Loading states from parent's mutations
 	isUpdating: boolean;
 	deleteLoading: boolean; // Added missing prop (was isDeleting in parent)
 	isAssigning: boolean;
 	isCreatingPrintJob: boolean;
+	isSendingToDisplay: boolean; // <-- 2. ADDED A NEW LOADING STATE PROP
 }
 export default function PropertyTableActionsCell({
 	property,
@@ -64,6 +66,7 @@ export default function PropertyTableActionsCell({
 	handleDelete,
 	handleAssign,
 	handleCreatePrintJob,
+	handleDisplayData,
 	isUpdating,
 	deleteLoading,
 	isAssigning,
@@ -233,6 +236,18 @@ export default function PropertyTableActionsCell({
 		</>
 	);
 
+	const renderDeveloperActions = () => {
+		return (
+			<>
+				<Button
+					onClick={() => handleDisplayData()}
+					variant='outline'
+					className='border-blue-200 text-blue-500 hover:text-blue-700 hover:bg-blue-50 cursor-pointer'>
+					Display
+				</Button>
+			</>
+		);
+	};
 	const renderActions = () => {
 		if (editMode[p.id]) {
 			return renderEditModeActions();
@@ -248,6 +263,9 @@ export default function PropertyTableActionsCell({
 
 		if (userRole === "property_custodian") {
 			return renderPropertyCustodianActions();
+		}
+		if (userRole === "developer") {
+			return renderDeveloperActions();
 		}
 
 		return null;
